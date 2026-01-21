@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: admin-user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: essay_db
+      POSTGRES_DB: ecommerceDb
     ports:
       - "5432:5432"
     volumes:
