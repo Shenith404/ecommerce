@@ -1,0 +1,38 @@
+server:
+  port: ${SERVER_PORT:4000}
+
+spring:
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ecommerceDb}
+    username: ${SPRING_DATASOURCE_USERNAME:admin-user}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+  sql:
+    init:
+      mode: always
+
+app:
+  otp:
+    expiry:
+      minutes: ${APP_OTP_EXPIRY_MINUTES:2}
+  account:
+    lock:
+      duration:
+        minutes: ${APP_ACCOUNT_LOCK_DURATION_MINUTES:30}
+      max-failed-attempts: ${APP_ACCOUNT_MAX_FAILED_ATTEMPTS:5}
+
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY:dGhpcyBpcyBhIHNlY3VyZSBzZWNyZXQga2V5IGZvciBqd3QgdG9rZW4gZ2VuZXJhdGlvbiBhbmQgdmFsaWRhdGlvbg==}
+  expiration:
+    time: ${JWT_EXPIRATION_TIME:86400000}
