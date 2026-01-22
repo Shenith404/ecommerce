@@ -116,8 +116,6 @@ public class AuthServiceImpl implements AuthService {
                 .message("User logged in successfully")
                 .success(true)
                 .build();
-
-
     }
 
     private Authentication authenticate(String username, String otp) {
