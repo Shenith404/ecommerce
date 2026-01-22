@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -56,6 +57,16 @@ public class GlobalExceptionHandler {
                 .timestamp(OffsetDateTime.now())
                 .build());
     }
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<?> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        log.warn("Username not found : {}", ex.getMessage());
+        return ResponseEntity.badRequest().body(ApiResponseDTO.builder()
+                .message(ex.getMessage())
+                .success(false)
+                .data(null)
+                .timestamp(OffsetDateTime.now())
+                .build());
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException ex) {
@@ -81,7 +92,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IOException.class)
     public ResponseEntity<?> handleIOException(IOException ex) {
         log.error("IOException: {}", ex.getMessage());
-        return ResponseEntity.status(500).body(ApiResponseDTO.builder()
+        return ResponseEntity.status(400).body(ApiResponseDTO.builder()
                 .message("IO operation failed: " + ex.getMessage())
                 .success(false)
                 .data(null)

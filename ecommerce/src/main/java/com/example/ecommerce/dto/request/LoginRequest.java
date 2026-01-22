@@ -1,16 +1,14 @@
-package com.example.ecommerce.dto;
+package com.example.ecommerce.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class SignUpRequestDTO {
+public class LoginRequest {
     @NotBlank(message = "Email is required")
-    @Email
+    @Email(message = "Invalid email format")
     private String email;
-    @NotBlank(message = "Full name is required")
-    private String fullName;
     @NotBlank(message = "OTP is required")
     private String otp;
 }
