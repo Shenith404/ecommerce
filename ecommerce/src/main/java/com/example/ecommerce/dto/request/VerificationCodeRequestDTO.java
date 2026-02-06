@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class VerificationCodeRequestDTO {
     private String email;
+    private String role;
 
 }

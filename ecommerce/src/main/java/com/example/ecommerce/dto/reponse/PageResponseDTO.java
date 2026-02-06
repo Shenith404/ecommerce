@@ -1,4 +1,4 @@
-package com.example.softwarebackend.shared.dto.response;
+package com.example.ecommerce.dto.reponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -5,6 +5,7 @@ import com.example.ecommerce.model.Seller;
 import com.example.ecommerce.model.User;
 import com.example.ecommerce.repository.SellerRepository;
 import com.example.ecommerce.repository.UserRepository;
+import com.example.ecommerce.utils.AppUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,11 +23,10 @@ import java.util.List;
 public class CustomUserServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
     private final SellerRepository sellerRepository;
-    private static final String SELLER_PREFIX= "seller_";
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        if(username.startsWith(SELLER_PREFIX)){
-            String actualUsername= username.substring(SELLER_PREFIX.length());
+        if(username.startsWith(AppUtil.SELLER_PREFIX)){
+            String actualUsername= username.substring(AppUtil.SELLER_PREFIX.length());
             Seller seller = sellerRepository.findByEmail(actualUsername).orElseThrow(
                     ()-> new UsernameNotFoundException(actualUsername)
             );

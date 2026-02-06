@@ -3,18 +3,17 @@ package com.example.ecommerce.service.impl;
 import com.example.ecommerce.config.JwtProvider;
 import com.example.ecommerce.domain.UserRole;
 import com.example.ecommerce.dto.reponse.ApiResponseDTO;
-import com.example.ecommerce.dto.reponse.AuthResponse;
+import com.example.ecommerce.dto.reponse.AuthResponseDTO;
 import com.example.ecommerce.dto.request.CartCreateRequest;
-import com.example.ecommerce.dto.request.LoginRequest;
+import com.example.ecommerce.dto.request.LoginRequestDTO;
 import com.example.ecommerce.dto.request.SignUpRequestDTO;
+import com.example.ecommerce.dto.request.VerificationCodeRequestDTO;
 import com.example.ecommerce.exception.ResourceNotFoundException;
 import com.example.ecommerce.model.User;
 import com.example.ecommerce.model.VerificationCode;
+import com.example.ecommerce.repository.SellerRepository;
 import com.example.ecommerce.repository.UserRepository;
-import com.example.ecommerce.service.interfaces.AuthService;
-import com.example.ecommerce.service.interfaces.CartService;
-import com.example.ecommerce.service.interfaces.EmailService;
-import com.example.ecommerce.service.interfaces.VerificationCodeService;
+import com.example.ecommerce.service.interfaces.*;
 import com.example.ecommerce.utils.AppUtil;
 import com.example.ecommerce.utils.OtpUtil;
 import jakarta.mail.MessagingException;
@@ -43,6 +42,7 @@ public class AuthServiceImpl implements AuthService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final UserRepository userRepository;
+    private final SellerRepository sellerRepository;
     private final PasswordEncoder passwordEncoder;
     private final CartService cartService;
     private final JwtProvider jwtProvider;
@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public ApiResponseDTO<AuthResponse> createUser(SignUpRequestDTO signUpRequestDTO) {
+    public ApiResponseDTO<AuthResponseDTO> createUser(SignUpRequestDTO signUpRequestDTO) {
 
         //check if verification code exists for email
         VerificationCode verificationCode = verificationCodeService.findByEmail(signUpRequestDTO.getEmail())
@@ -86,8 +86,8 @@ public class AuthServiceImpl implements AuthService {
 
         var token = jwtProvider.generateToken(authentication);
 
-        return ApiResponseDTO.<AuthResponse>builder()
-                .data(AuthResponse.builder()
+        return ApiResponseDTO.<AuthResponseDTO>builder()
+                .data(AuthResponseDTO.builder()
                         .role(newUser.getRole().toString())
                         .token(token)
                         .build())
@@ -97,9 +97,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ApiResponseDTO<AuthResponse> loginUser(LoginRequest loginRequest){
-        String username = loginRequest.getEmail();
-        String otp = loginRequest.getOtp();
+    public ApiResponseDTO<AuthResponseDTO> loginUser(LoginRequestDTO loginRequestDTO){
+        String username = loginRequestDTO.getEmail();
+        String otp = loginRequestDTO.getOtp();
 
         Authentication authentication = authenticate(username, otp);
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -108,8 +108,8 @@ public class AuthServiceImpl implements AuthService {
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         String roleName = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority();
 
-        return ApiResponseDTO.<AuthResponse>builder()
-                .data(AuthResponse.builder()
+        return ApiResponseDTO.<AuthResponseDTO>builder()
+                .data(AuthResponseDTO.builder()
                         .token(token)
                         .role(roleName)
                         .build())
@@ -129,13 +129,22 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void sendLoginOtp(String email) throws MessagingException {
+    public void sendLoginOtp(VerificationCodeRequestDTO requestDTO) throws MessagingException {
 
         String SIGNIN_PREFIX = "signin_";
+        String email = requestDTO.getEmail();
 
         if (email.startsWith(SIGNIN_PREFIX)) {
             email = email.substring(SIGNIN_PREFIX.length());
-            User user = userRepository.findByEmail(email)
+        }
+        if(requestDTO.getRole().equals(UserRole.ROLE_SELLER.toString())) {
+            System.out.println("Checking seller email: " + email);
+
+            sellerRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResourceNotFoundException("Seller not found with email "));
+        }else{
+            System.out.println("Checking user email: " + email);
+            userRepository.findByEmail(email)
                     .orElseThrow(() -> new ResourceNotFoundException("User not found with email "));
         }
 
