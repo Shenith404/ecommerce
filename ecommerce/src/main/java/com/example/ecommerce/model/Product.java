@@ -20,22 +20,18 @@ public class Product  extends BaseModel{
 
     private String title;
 
+    @Column(length = 1000)
     private String description;
 
-    private double mrpPrice;
-
-    private double sellingPrice;
-
-    private double discountPercentage;
-
-    private int stockQuantity;
-
-    private String color;
+    @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true,mappedBy = "product")
+    private Set<ProductVariant> productVariants= new HashSet<>();
 
     @ElementCollection
     private List<String> images = new ArrayList<>();
 
     private int numRatings;
+
+    private double averageRating;
 
     @ManyToOne
     @JsonIgnore
@@ -44,8 +40,6 @@ public class Product  extends BaseModel{
     @ManyToOne
     @JsonIgnore
     private Seller seller;
-
-    private String sizes;
 
     @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonManagedReference
