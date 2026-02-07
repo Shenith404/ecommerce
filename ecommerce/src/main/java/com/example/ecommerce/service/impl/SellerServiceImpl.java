@@ -24,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -182,5 +183,10 @@ public class SellerServiceImpl implements SellerService {
         Seller updatedSeller = sellerRepository.save(seller);
         LOGGER.info("Seller email verified for id: {}", sellerId);
         return SellerMapper.toDto(updatedSeller);
+    }
+
+    @Override
+    public Optional<Seller> getSellerEntityByEmail(String email) {
+        return sellerRepository.findByEmail(email);
     }
 }

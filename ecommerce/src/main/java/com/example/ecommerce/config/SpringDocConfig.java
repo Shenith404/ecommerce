@@ -17,7 +17,7 @@ public class SpringDocConfig {
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("Essay-Grading API")
+                        .title("Ecommerce API")
                         .description("API")
                         .version("1.0"))
          .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))

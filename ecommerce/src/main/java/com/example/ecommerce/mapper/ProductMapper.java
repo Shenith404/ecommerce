@@ -4,6 +4,8 @@ import com.example.ecommerce.dto.reponse.ProductResponseDTO;
 import com.example.ecommerce.dto.request.ProductCreateRequestDTO;
 import com.example.ecommerce.model.Product;
 
+import java.util.ArrayList;
+
 public class ProductMapper {
     public static ProductResponseDTO toDto(Product product) {
         return ProductResponseDTO.builder()
@@ -12,8 +14,8 @@ public class ProductMapper {
                 .description(product.getDescription())
                 .numRatings(product.getNumRatings())
                 .averageRating(product.getAverageRating())
-                .productVariants(product.getProductVariants().stream().map(ProductVariantMapper::toDto).toList())
-                .reviews(product.getReviews().stream().map(ReviewMapper::toDto).toList())
+                .productVariants(product.getProductVariants() !=null ? product.getProductVariants().stream().map(ProductVariantMapper::toDto).toList() : new ArrayList<>())
+                .reviews(product.getReviews() != null ?  product.getReviews().stream().map(ReviewMapper::toDto).toList() : new ArrayList<>())
                 .build();
     }
     public static Product toEntity(ProductCreateRequestDTO productCreateRequestDTO) {
