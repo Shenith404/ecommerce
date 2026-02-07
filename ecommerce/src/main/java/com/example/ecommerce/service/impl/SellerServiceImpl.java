@@ -15,10 +15,7 @@ import com.example.ecommerce.model.Address;
 import com.example.ecommerce.model.Seller;
 import com.example.ecommerce.model.VerificationCode;
 import com.example.ecommerce.repository.SellerRepository;
-import com.example.ecommerce.service.interfaces.AddressService;
-import com.example.ecommerce.service.interfaces.AuthService;
-import com.example.ecommerce.service.interfaces.SellerService;
-import com.example.ecommerce.service.interfaces.VerificationCodeService;
+import com.example.ecommerce.service.interfaces.*;
 import com.example.ecommerce.utils.AppUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -60,10 +57,10 @@ public class SellerServiceImpl implements SellerService {
 
     @Override
     public SellerResponseDTO createSeller(SellerCreateDTO sellerCreateDTO) {
-        Seller isExist = sellerRepository.findByEmail(sellerCreateDTO.getEmail())
-                .orElseThrow(
-                        () -> new ResourceNotFoundException("Seller already exists with email: " + sellerCreateDTO.getEmail())
-                );
+        Seller isExist = sellerRepository.findByEmail(sellerCreateDTO.getEmail()).orElse(null);
+        if (isExist != null) {
+            throw new IllegalArgumentException("Seller already exists with email: " + sellerCreateDTO.getEmail());
+        }
 
         Seller newSeller = new Seller();
         Address savedAddress = addressService.createAddress(sellerCreateDTO.getAddress());
@@ -71,7 +68,6 @@ public class SellerServiceImpl implements SellerService {
         newSeller.setEmail(sellerCreateDTO.getEmail());
         newSeller.setSellerName(sellerCreateDTO.getSellerName());
         newSeller.setMobile(sellerCreateDTO.getMobile());
-        newSeller.setPassword(passwordEncoder.encode(sellerCreateDTO.getPassword()));
         newSeller.setBusinessDetails(sellerCreateDTO.getBusinessDetails());
         newSeller.setBankDetails(sellerCreateDTO.getBankDetails());
         newSeller.setGSTIN(sellerCreateDTO.getGSTIN());
@@ -79,6 +75,7 @@ public class SellerServiceImpl implements SellerService {
         newSeller.setRole(UserRole.ROLE_SELLER);
         Seller savedSeller = sellerRepository.save(newSeller);
         LOGGER.info("New seller created with id: {}", savedSeller.getId());
+
 
         return SellerMapper.toDto(savedSeller);
     }

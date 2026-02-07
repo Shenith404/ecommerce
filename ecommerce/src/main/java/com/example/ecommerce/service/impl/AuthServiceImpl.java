@@ -24,15 +24,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -52,16 +49,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public ApiResponseDTO<AuthResponseDTO> createUser(SignUpRequestDTO signUpRequestDTO) {
-
-        //check if verification code exists for email
-        VerificationCode verificationCode = verificationCodeService.findByEmail(signUpRequestDTO.getEmail())
-                .orElseThrow(
-                        () -> new ResourceNotFoundException("Verification code not found for email: " + signUpRequestDTO.getEmail())
-                );
-        if (!verificationCode.getOtp().equals(signUpRequestDTO.getOtp())) {
-            throw new ResourceNotFoundException("Invalid OTP code for email: " + signUpRequestDTO.getEmail());
-        }
+    public ApiResponseDTO<Void> createUser(SignUpRequestDTO signUpRequestDTO) {
 
         var user = userRepository.findByEmail(signUpRequestDTO.getEmail());
         if (user.isPresent()) {
@@ -72,25 +60,13 @@ public class AuthServiceImpl implements AuthService {
         newUser.setFullName(signUpRequestDTO.getFullName());
         newUser.setEmail(signUpRequestDTO.getEmail());
         newUser.setRole(UserRole.ROLE_CUSTOMER);
-        newUser.setPassword(passwordEncoder.encode(signUpRequestDTO.getOtp()));
         newUser = userRepository.save(newUser);
         //create cart for user
         cartService.CreateCart(new CartCreateRequest(newUser));
         LOGGER.info("New user created with email: {}", signUpRequestDTO.getEmail());
 
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        grantedAuthorities.add(new SimpleGrantedAuthority(UserRole.ROLE_CUSTOMER.toString()));
-
-        Authentication authentication = new UsernamePasswordAuthenticationToken(signUpRequestDTO.getEmail(), null, grantedAuthorities);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        var token = jwtProvider.generateToken(authentication);
-
-        return ApiResponseDTO.<AuthResponseDTO>builder()
-                .data(AuthResponseDTO.builder()
-                        .role(newUser.getRole().toString())
-                        .token(token)
-                        .build())
+        return ApiResponseDTO.<Void>builder()
+                .data(null)
                 .message("User created successfully")
                 .success(true)
                 .build();
@@ -138,8 +114,6 @@ public class AuthServiceImpl implements AuthService {
             email = email.substring(SIGNIN_PREFIX.length());
         }
         if(requestDTO.getRole().equals(UserRole.ROLE_SELLER.toString())) {
-            System.out.println("Checking seller email: " + email);
-
             sellerRepository.findByEmail(email)
                     .orElseThrow(() -> new ResourceNotFoundException("Seller not found with email "));
         }else{

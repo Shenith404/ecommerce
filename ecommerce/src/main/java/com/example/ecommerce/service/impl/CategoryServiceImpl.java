@@ -1,5 +1,6 @@
 package com.example.ecommerce.service.impl;
 
+import com.example.ecommerce.config.JwtProvider;
 import com.example.ecommerce.dto.reponse.CategoryResponseDTO;
 import com.example.ecommerce.dto.reponse.PageResponseDTO;
 import com.example.ecommerce.dto.request.CategoryCreateRequestDTO;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,8 +31,11 @@ public class CategoryServiceImpl implements CategoryService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategoryServiceImpl.class);
 
     private final CategoryRepository categoryRepository;
+    private final JwtProvider jwtProvider;
 
+    //Allow only for ROLE_SELLER
     @Override
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public CategoryResponseDTO createCategory(CategoryCreateRequestDTO requestDTO) {
         Category category = CategoryMapper.toEntity(requestDTO);
         if(requestDTO.getParentCategoryId() != null) {
@@ -53,6 +58,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public CategoryResponseDTO updateCategory(CategoryUpdateRequestDTO requestDTO) {
         Category existingCategory = categoryRepository.findById(UUID.fromString(requestDTO.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + requestDTO.getId()));
@@ -86,11 +92,15 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void deleteCategory(String categoryId) {
         Category existingCategory = categoryRepository.findById(UUID.fromString(categoryId))
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
         categoryRepository.delete(existingCategory);
     }
+
+
+    /// ///Allow for all
 
     @Override
     public CategoryResponseDTO getCategoryById(String categoryId) {

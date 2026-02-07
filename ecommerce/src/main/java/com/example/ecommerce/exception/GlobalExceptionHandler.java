@@ -110,6 +110,9 @@ public class GlobalExceptionHandler {
                 .timestamp(OffsetDateTime.now())
                 .build());
     }
+
+
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleException(Exception ex) {
         log.error("Exception: {}", ex.getMessage());

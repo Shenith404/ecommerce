@@ -26,9 +26,6 @@ public class Product  extends BaseModel{
     @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true,mappedBy = "product")
     private Set<ProductVariant> productVariants= new HashSet<>();
 
-    @ElementCollection
-    private List<String> images = new ArrayList<>();
-
     private int numRatings;
 
     private double averageRating;

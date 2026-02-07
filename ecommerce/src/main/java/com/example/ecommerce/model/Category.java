@@ -34,5 +34,4 @@ public class Category  extends  BaseModel{
     private int level=1;
 
 
-
 }

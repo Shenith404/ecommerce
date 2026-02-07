@@ -24,14 +24,14 @@ public class AuthController {
     private final AuthService authService;;
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> createUserHandler(@Valid @RequestBody SignUpRequestDTO signUpRequestDTO) {
+    public ResponseEntity<ApiResponseDTO<Void>> createUserHandler(@Valid @RequestBody SignUpRequestDTO signUpRequestDTO) {
 
-        var response = authService.createUser(signUpRequestDTO);
+        authService.createUser(signUpRequestDTO);
 
-        return ResponseEntity.ok( ApiResponseDTO.<AuthResponseDTO>builder()
+        return ResponseEntity.ok( ApiResponseDTO.<Void>builder()
                 .message("User registered successfully")
                 .success(true)
-                .data(response.getData())
+                .data(null)
                 .timestamp(OffsetDateTime.now())
                 .build()
         );

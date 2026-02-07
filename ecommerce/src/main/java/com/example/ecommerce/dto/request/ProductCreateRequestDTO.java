@@ -18,26 +18,24 @@ public class ProductCreateRequestDTO {
     @Size(max = 1000, message = "Description cannot exceed 1000 characters")
     private String description;
 
-    @NotBlank(message = "MRP Price is mandatory")
-    @Positive(message = "MRP Price must be positive")
-    private double mrpPrice;
-
-    @NotBlank(message = "Selling Price is mandatory")
-    @PositiveOrZero(message = "Selling Price must be zero or positive")
-    private double sellingPrice;
-
-    @PositiveOrZero(message = "Discount Percentage must be zero or positive")
-    @Size(max = 100, message = "Discount Percentage cannot exceed 100")
-    private double discountPercentage;
-
-    @PositiveOrZero(message = "Stock Quantity must be zero or positive")
-    private int stockQuantity;
-
-    private String color;
+//    @NotBlank(message = "MRP Price is mandatory")
+//    @Positive(message = "MRP Price must be positive")
+//    private double mrpPrice;
+//
+//    @NotBlank(message = "Selling Price is mandatory")
+//    @PositiveOrZero(message = "Selling Price must be zero or positive")
+//    private double sellingPrice;
+//
+//    @PositiveOrZero(message = "Discount Percentage must be zero or positive")
+//    @Size(max = 100, message = "Discount Percentage cannot exceed 100")
+//    private double discountPercentage;
+//
+//    @PositiveOrZero(message = "Stock Quantity must be zero or positive")
+//    private int stockQuantity;
+//
+//    private String color;
 
     @NotBlank(message = "Category ID is mandatory")
     private String categoryId;
-
-    private String sizes;
 
 }

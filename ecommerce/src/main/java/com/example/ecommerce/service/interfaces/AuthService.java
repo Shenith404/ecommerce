@@ -8,7 +8,7 @@ import com.example.ecommerce.dto.request.VerificationCodeRequestDTO;
 import jakarta.mail.MessagingException;
 
 public interface AuthService {
-    ApiResponseDTO<AuthResponseDTO>  createUser(SignUpRequestDTO signUpRequestDTO);
+    ApiResponseDTO<Void>  createUser(SignUpRequestDTO signUpRequestDTO);
 
     ApiResponseDTO<AuthResponseDTO> loginUser(LoginRequestDTO loginRequestDTO);
 

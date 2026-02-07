@@ -3,6 +3,7 @@ package com.example.ecommerce.service.impl;
 import com.example.ecommerce.model.VerificationCode;
 import com.example.ecommerce.repository.VerificationCodeRepository;
 import com.example.ecommerce.service.interfaces.VerificationCodeService;
+import com.example.ecommerce.utils.AppUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,9 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
 
     @Override
     public Optional<VerificationCode> findByEmail(String email) {
+        if(email.startsWith(AppUtil.SELLER_PREFIX)){
+            email=email.substring(AppUtil.SELLER_PREFIX.length());
+        }
         return verificationCodeRepository.findByEmail(email);
     }
 

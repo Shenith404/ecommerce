@@ -11,6 +11,5 @@ public class SignUpRequestDTO {
     private String email;
     @NotBlank(message = "Full name is required")
     private String fullName;
-    @NotBlank(message = "OTP is required")
-    private String otp;
+
 }

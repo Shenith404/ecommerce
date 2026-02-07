@@ -25,7 +25,6 @@ public class SellerCreateDTO {
     private AddressCreateRequestDTO address;
     private String sellerName;
     private String mobile;
-    private String password;
     private BusinessDetails businessDetails;
     private BankDetails bankDetails;
     private String GSTIN;

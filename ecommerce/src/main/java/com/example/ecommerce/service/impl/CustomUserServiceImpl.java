@@ -27,6 +27,7 @@ public class CustomUserServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if(username.startsWith(AppUtil.SELLER_PREFIX)){
             String actualUsername= username.substring(AppUtil.SELLER_PREFIX.length());
+            System.out.println("checking username: "+actualUsername);
             Seller seller = sellerRepository.findByEmail(actualUsername).orElseThrow(
                     ()-> new UsernameNotFoundException(actualUsername)
             );
@@ -43,7 +44,7 @@ public class CustomUserServiceImpl implements UserDetailsService {
     private UserDetails buildUserDetails(String email, String password, UserRole role) {
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_"+(role==null ?UserRole.ROLE_CUSTOMER : role).toString()));
+        authorities.add(new SimpleGrantedAuthority((role==null ?UserRole.ROLE_CUSTOMER : role).toString()));
         return new org.springframework.security.core.userdetails.User(email,password,authorities);
     }
 }
