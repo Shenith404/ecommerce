@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -110,6 +111,17 @@ public class GlobalExceptionHandler {
                 .timestamp(OffsetDateTime.now())
                 .build());
     }
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<?> handleAccessDeniedException(MaxUploadSizeExceededException ex) {
+        log.warn("File Size is Exceeds the limit of 5MB: {}", ex.getMessage());
+        return ResponseEntity.status(400).body(ApiResponseDTO.builder()
+                .message("File Size is Exceeds the limit of 5MB")
+                .success(false)
+                .data(null)
+                .timestamp(OffsetDateTime.now())
+                .build());
+    }
+
 
 
 
