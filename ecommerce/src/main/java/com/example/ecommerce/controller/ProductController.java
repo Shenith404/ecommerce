@@ -133,12 +133,11 @@ public class ProductController {
     //get products by seller
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<ApiResponseDTO<PageResponseDTO<ProductResponseDTO>>> getProductsBySeller(
-            @PathVariable String sellerId,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt,desc") String[] sort) {
-        var products = productService.getProductsBySeller(sellerId, search, page, size, sort);
+        var products = productService.getProductsBySeller(search, page, size, sort);
         return ResponseEntity.ok(
                 ApiResponseDTO.<PageResponseDTO<ProductResponseDTO>>builder()
                         .message("Products retrieved successfully")

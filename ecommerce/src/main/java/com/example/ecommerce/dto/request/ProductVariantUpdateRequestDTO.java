@@ -1,7 +1,5 @@
 package com.example.ecommerce.dto.request;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -14,20 +12,11 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductVariantCreateRequestDTO {
-
-    @NotBlank(message = "Product ID is required")
-    private String productId;
-
-    @NotBlank(message = "SKU is required")
-    private String sku; // Unique Stock Keeping Unit (e.g., TS-RED-LGE)
+public class ProductVariantUpdateRequestDTO {
 
     private String color;
 
     private String size;
-
-    @Min(value = 0, message = "Stock Quantity must be zero or positive")
-    private int stockQuantity = 0;
 
     @NotNull(message = "MRP Price is mandatory")
     @Positive(message = "MRP Price must be positive")
@@ -36,5 +25,4 @@ public class ProductVariantCreateRequestDTO {
     @NotNull(message = "Selling Price is mandatory")
     @PositiveOrZero(message = "Selling Price must be zero or positive")
     private BigDecimal sellingPrice;
-
 }

@@ -1,6 +1,7 @@
 package com.example.ecommerce.config;
 
 import com.example.ecommerce.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +32,11 @@ public class ApplicationConfig {
 //        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
 //        return daoAuthenticationProvider;
 //    }
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();

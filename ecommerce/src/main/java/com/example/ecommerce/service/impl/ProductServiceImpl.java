@@ -12,7 +12,6 @@ import com.example.ecommerce.repository.ProductRepository;
 import com.example.ecommerce.service.interfaces.CategoryService;
 import com.example.ecommerce.service.interfaces.ProductService;
 import com.example.ecommerce.service.interfaces.SellerService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +19,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -73,7 +74,7 @@ public class ProductServiceImpl implements ProductService {
         // check owner of the product
         String sellerEmail = jwtProvider.getEmailFromHeader();
         if (!Objects.equals(product.getSeller().getEmail(), sellerEmail)) {
-            throw new ResourceNotFoundException("Product not found with id ");
+            throw new AccessDeniedException("Unauthorized to update this product");
         }
         if(requestDTO.getTitle() != null){
             product.setTitle(requestDTO.getTitle());
@@ -93,6 +94,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @PreAuthorize("hasRole('ROLE_SELLER')")
+    @Transactional
     public void delete(String id) {
         Product product = productRepository.findById(UUID.fromString(id))
                 .orElseThrow(
@@ -101,12 +103,13 @@ public class ProductServiceImpl implements ProductService {
         // check owner of the product
         String sellerEmail = jwtProvider.getEmailFromHeader();
         if (!Objects.equals(product.getSeller().getEmail(), sellerEmail)) {
-            throw new ResourceNotFoundException("Product not found with id ");
+            throw new AccessDeniedException("Unauthorized to delete this product");
         }
         productRepository.delete(product);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponseDTO getById(String id) {
         Product product = productRepository.findById(UUID.fromString(id))
                 .orElseThrow(
@@ -116,6 +119,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Product> getEntityById(String id) {
         return productRepository.findById(UUID.fromString(id));
     }
@@ -149,6 +153,7 @@ public class ProductServiceImpl implements ProductService {
 
     // get products by category
     @Override
+    @Transactional(readOnly = true)
     public PageResponseDTO<ProductResponseDTO> getProductsByCategory(String categoryId, String search, int page, int size, String[] sort) {
         // Validate sort array
         if (sort == null || sort.length < 2) {
@@ -175,7 +180,8 @@ public class ProductServiceImpl implements ProductService {
 
     // get products by seller
     @Override
-    public PageResponseDTO<ProductResponseDTO> getProductsBySeller(String sellerId, String search, int page, int size, String[] sort) {
+    @Transactional(readOnly = true)
+    public PageResponseDTO<ProductResponseDTO> getProductsBySeller( String search, int page, int size, String[] sort) {
         // Validate sort array
         if (sort == null || sort.length < 2) {
             sort = new String[]{"createdAt", "desc"};
@@ -184,13 +190,15 @@ public class ProductServiceImpl implements ProductService {
         Sort.Direction direction = sort[1].equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
 
+        String sellerEmail = jwtProvider.getEmailFromHeader();
+
         Page<Product> currentPage;
         int currentPageNumber = pageable.getPageNumber();
         List<ProductResponseDTO> products;
         if (!Objects.equals(search, "") && search != null) {
-            currentPage = productRepository.findSellerProductsBySearchKey(search, sellerId, pageable);
+            currentPage = productRepository.findSellerProductsBySearchKey(search, sellerEmail, pageable);
         } else {
-            currentPage = productRepository.findAllSellerProducts(sellerId, pageable);
+            currentPage = productRepository.findAllSellerProducts(sellerEmail, pageable);
         }
         products = (currentPage.getContent()).stream().map(ProductMapper::toDto).toList();
 
@@ -201,6 +209,7 @@ public class ProductServiceImpl implements ProductService {
 
     // get all products (public view)
     @Override
+    @Transactional(readOnly = true)
     public PageResponseDTO<ProductResponseDTO> getAllProducts(String search, int page, int size, String[] sort) {
         // Validate sort array
         if (sort == null || sort.length < 2) {

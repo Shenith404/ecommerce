@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -116,6 +118,20 @@ public class GlobalExceptionHandler {
         log.warn("File Size is Exceeds the limit of 5MB: {}", ex.getMessage());
         return ResponseEntity.status(400).body(ApiResponseDTO.builder()
                 .message("File Size is Exceeds the limit of 5MB")
+                .success(false)
+                .data(null)
+                .timestamp(OffsetDateTime.now())
+                .build());
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<?> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
+        log.warn("Unsupported Media Type: {}", ex.getMessage());
+        String supported = ex.getSupportedMediaTypes().isEmpty()
+                ? "multipart/form-data"
+                : ex.getSupportedMediaTypes().toString();
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(ApiResponseDTO.builder()
+                .message("Unsupported media type: '" + ex.getContentType() + "'. For file uploads, use 'multipart/form-data'. Supported types: " + supported)
                 .success(false)
                 .data(null)
                 .timestamp(OffsetDateTime.now())

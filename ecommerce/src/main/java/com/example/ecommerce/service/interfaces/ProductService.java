@@ -16,6 +16,6 @@ public interface ProductService {
     public Optional<Product> getEntityById(String id);
     public PageResponseDTO<ProductResponseDTO> getAll(String search, int page, int size, String[] sort);
     public PageResponseDTO<ProductResponseDTO> getProductsByCategory(String categoryId, String search, int page, int size, String[] sort);
-    public PageResponseDTO<ProductResponseDTO> getProductsBySeller(String sellerId, String search, int page, int size, String[] sort);
+    public PageResponseDTO<ProductResponseDTO> getProductsBySeller( String search, int page, int size, String[] sort);
     public PageResponseDTO<ProductResponseDTO> getAllProducts(String search, int page, int size, String[] sort);
 }
