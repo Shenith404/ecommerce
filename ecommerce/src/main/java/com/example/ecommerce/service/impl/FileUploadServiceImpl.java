@@ -23,7 +23,11 @@ public class FileUploadServiceImpl implements FileUploadService {
 
         // Upload to a specific folder in Cloudinary to keep it organized
         Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                ObjectUtils.asMap("folder", "ecommerce/products"));
+                ObjectUtils.asMap(
+                        "folder", "ecommerce/products",
+                        "format", "webp", // Forces Cloudinary to convert it to WebP
+                        "quality", "80" // Let Cloudinary optimize the quality for you
+                ));
 
         // secure_url ensures you get an HTTPS link back
         return uploadResult.get("secure_url").toString();
