@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -18,6 +19,10 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
             "LOWER(c.slug) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Category> findBySearchKey(String search, Pageable pageable);
 
-    @Query("SELECT c FROM Category c WHERE c.parent.id =:uuid")
-    List<Category> findByParentId(UUID uuid);
+    @Query("SELECT c FROM Category c WHERE c.parent.slug = :parentSlug")
+    List<Category> findByParentSlug(String parentSlug);
+
+    boolean existsBySlug(String slug);
+
+    Optional<Category> findBySlug(String slug);
 }

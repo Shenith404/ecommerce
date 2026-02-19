@@ -10,6 +10,7 @@ public class ProductMapper {
     public static ProductResponseDTO toDto(Product product) {
         return ProductResponseDTO.builder()
                 .id(product.getId().toString())
+                .slug(product.getSlug())
                 .title(product.getTitle())
                 .description(product.getDescription())
                 .numRatings(product.getNumRatings())

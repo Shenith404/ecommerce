@@ -2,7 +2,6 @@ package com.example.ecommerce.service.impl;
 
 import com.example.ecommerce.config.JwtProvider;
 import com.example.ecommerce.exception.ResourceNotFoundException;
-import com.example.ecommerce.repository.ProductRepository;
 import com.example.ecommerce.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -55,7 +54,6 @@ public class InventoryServiceImpl implements com.example.ecommerce.service.inter
             throw new AccessDeniedException("You do not have permission to modify this product variant's stock.");
         }
 
-        // The query returns how many rows were updated.
         // If it returns 0, it means the "v.stockQuantity >= :amount" rule failed.
         int updatedRows = variantRepository.removeStock(UUID.fromString(variantId), amount);
 

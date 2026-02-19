@@ -16,5 +16,6 @@ public interface CategoryService {
     public CategoryResponseDTO getCategoryById(String categoryId);
     public Optional<Category> getCategoryEntityById(String categoryId);
     public PageResponseDTO<CategoryResponseDTO> getAllCategories(String search, int page, int size, String[] sort);
-    public List<CategoryResponseDTO> getSubCategories(String parentCategoryId);
+    public List<CategoryResponseDTO> getSubCategories(String parentSlug);
+    public CategoryResponseDTO getBySlug(String slug);
 }

@@ -1,6 +1,5 @@
 package com.example.ecommerce.service.impl;
 
-import com.example.ecommerce.config.JwtProvider;
 import com.example.ecommerce.dto.reponse.CategoryResponseDTO;
 import com.example.ecommerce.dto.reponse.PageResponseDTO;
 import com.example.ecommerce.dto.request.CategoryCreateRequestDTO;
@@ -31,7 +30,6 @@ public class CategoryServiceImpl implements CategoryService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategoryServiceImpl.class);
 
     private final CategoryRepository categoryRepository;
-    private final JwtProvider jwtProvider;
 
     //Allow only for ROLE_SELLER
     @Override
@@ -45,13 +43,7 @@ public class CategoryServiceImpl implements CategoryService {
             category.setLevel(parentCategory.getLevel() + 1);
         }
 
-        String baseSlug = category.getName().toLowerCase()
-                .replaceAll("[^a-z0-9]", "-") // Remove special chars
-                .replaceAll("-+", "-")        // Remove double dashes
-                .replaceAll("^-|-$", "")
-                .replaceAll(" ","-");     // Trim dashes from ends
-        category.setSlug(baseSlug + "-" + UUID.randomUUID().toString().substring(0, 8)); // Add random suffix for uniqueness
-
+        category.setSlug(generateUniqueSlug(requestDTO.getName(), null));
 
         var createdCategory= categoryRepository.save(category);
         return CategoryMapper.toDto(createdCategory);
@@ -67,13 +59,8 @@ public class CategoryServiceImpl implements CategoryService {
         if(requestDTO.getName() != null && !requestDTO.getName().trim().isEmpty()) {
             existingCategory.setName(requestDTO.getName());
 
-            // Generate new slug
-            String baseSlug = requestDTO.getName().toLowerCase()
-                    .replaceAll("[^a-z0-9]", "-") // Remove special chars
-                    .replaceAll("-+", "-")        // Remove double dashes
-                    .replaceAll("^-|-$", "")
-                    .replaceAll(" ","-");         // Trim dashes from ends
-            existingCategory.setSlug(baseSlug + "-" + UUID.randomUUID().toString().substring(0, 8));
+                  // Trim dashes from ends
+            existingCategory.setSlug(generateUniqueSlug(requestDTO.getName(),existingCategory.getSlug()));
         }
 
         // Update parent category if provided
@@ -135,9 +122,32 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryResponseDTO> getSubCategories(String parentCategoryId) {
-        List<Category> childCategories = categoryRepository.findByParentId(UUID.fromString(parentCategoryId));
+    public List<CategoryResponseDTO> getSubCategories(String parentSlug) {
+        List<Category> childCategories = categoryRepository.findByParentSlug(parentSlug);
         return childCategories.stream().map(CategoryMapper::toDto).toList();
+    }
+
+    @Override
+    public CategoryResponseDTO getBySlug(String slug) {
+        Category category = categoryRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with slug: " + slug));
+        return CategoryMapper.toDto(category);
+    }
+
+    private String generateUniqueSlug(String title, String currentSlug) {
+        String baseSlug = title.toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "")  // keep only letters, digits, spaces, hyphens
+                .trim()
+                .replaceAll("[\\s-]+", "-");        // collapse spaces/hyphens into one dash
+
+        String candidate = baseSlug;
+        int counter = 1;
+
+        while (categoryRepository.existsBySlug(candidate)
+                && !candidate.equals(currentSlug)) {
+            candidate = baseSlug + "-" + counter++;
+        }
+        return candidate;
     }
 
 

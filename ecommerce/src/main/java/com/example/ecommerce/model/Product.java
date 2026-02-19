@@ -20,6 +20,9 @@ public class Product  extends BaseModel{
 
     private String title;
 
+    @Column(unique = true)
+    private String slug;
+
     @Column(length = 1000)
     private String description;
 

@@ -75,6 +75,20 @@ public class ProductController {
         );
     }
 
+    //get product by slug (SEO-friendly URL)
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<ApiResponseDTO<ProductResponseDTO>> getProductBySlug(@PathVariable String slug) {
+        var product = productService.getBySlug(slug);
+        return ResponseEntity.ok(
+                ApiResponseDTO.<ProductResponseDTO>builder()
+                        .message("Product retrieved successfully")
+                        .success(true)
+                        .data(product)
+                        .timestamp(OffsetDateTime.now())
+                        .build()
+        );
+    }
+
     //get all products for seller (authenticated seller's products)
     @GetMapping("/seller/my-products")
     public ResponseEntity<ApiResponseDTO<PageResponseDTO<ProductResponseDTO>>> getMyProducts(
@@ -112,14 +126,14 @@ public class ProductController {
     }
 
     //get products by category
-    @GetMapping("/category/{categoryId}")
+    @GetMapping("/category/{categorySlug}")
     public ResponseEntity<ApiResponseDTO<PageResponseDTO<ProductResponseDTO>>> getProductsByCategory(
-            @PathVariable String categoryId,
+            @PathVariable String categorySlug,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt,desc") String[] sort) {
-        var products = productService.getProductsByCategory(categoryId, search, page, size, sort);
+        var products = productService.getProductsByCategory(categorySlug, search, page, size, sort);
         return ResponseEntity.ok(
                 ApiResponseDTO.<PageResponseDTO<ProductResponseDTO>>builder()
                         .message("Products retrieved successfully")

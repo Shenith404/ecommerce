@@ -59,7 +59,8 @@ public class ProductServiceImpl implements ProductService {
                         ()-> new ResourceNotFoundException("Seller not found with Email ")
                 );
         product.setSeller(seller);
-
+        //set slug
+        product.setSlug(generateUniqueSlug(requestDTO.getTitle(), null));
         return ProductMapper.toDto(productRepository.save(product));
     }
 
@@ -78,6 +79,7 @@ public class ProductServiceImpl implements ProductService {
         }
         if(requestDTO.getTitle() != null){
             product.setTitle(requestDTO.getTitle());
+            product.setSlug(generateUniqueSlug(requestDTO.getTitle(), product.getSlug()));
         }
         if(requestDTO.getDescription() != null){
             product.setDescription(requestDTO.getDescription());
@@ -120,6 +122,16 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    public ProductResponseDTO getBySlug(String slug) {
+        Product product = productRepository.findBySlug(slug)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Product not found with slug: " + slug)
+                );
+        return ProductMapper.toDto(product);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<Product> getEntityById(String id) {
         return productRepository.findById(UUID.fromString(id));
     }
@@ -154,7 +166,7 @@ public class ProductServiceImpl implements ProductService {
     // get products by category
     @Override
     @Transactional(readOnly = true)
-    public PageResponseDTO<ProductResponseDTO> getProductsByCategory(String categoryId, String search, int page, int size, String[] sort) {
+    public PageResponseDTO<ProductResponseDTO> getProductsByCategory(String categorySlug, String search, int page, int size, String[] sort) {
         // Validate sort array
         if (sort == null || sort.length < 2) {
             sort = new String[]{"createdAt", "desc"};
@@ -167,9 +179,9 @@ public class ProductServiceImpl implements ProductService {
         int currentPageNumber = pageable.getPageNumber();
         List<ProductResponseDTO> products;
         if (!Objects.equals(search, "") && search != null) {
-            currentPage = productRepository.findCategoryProductsBySearchKey(UUID.fromString(categoryId), search, pageable);
+            currentPage = productRepository.findCategoryProductsBySearchKey(categorySlug, search, pageable);
         } else {
-            currentPage = productRepository.findAllCategoryProducts(UUID.fromString(categoryId), pageable);
+            currentPage = productRepository.findAllCategoryProducts(categorySlug, pageable);
         }
         products = (currentPage.getContent()).stream().map(ProductMapper::toDto).toList();
 
@@ -234,5 +246,21 @@ public class ProductServiceImpl implements ProductService {
         return new PageResponseDTO<>(currentPageNumber, currentPage.getTotalPages(), products);
     }
 
+
+    private String generateUniqueSlug(String title, String currentSlug) {
+        String baseSlug = title.toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "")  // keep only letters, digits, spaces, hyphens
+                .trim()
+                .replaceAll("[\\s-]+", "-");        // collapse spaces/hyphens into one dash
+
+        String candidate = baseSlug;
+        int counter = 1;
+
+        while (productRepository.existsBySlug(candidate)
+                && !candidate.equals(currentSlug)) {
+            candidate = baseSlug + "-" + counter++;
+        }
+        return candidate;
+    }
 
 }

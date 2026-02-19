@@ -15,6 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class ProductResponseDTO {
     private String id;
+    private String slug;
     private String title;
     private String description;
     private int numRatings;

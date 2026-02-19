@@ -59,10 +59,23 @@ public class CategoryController {
         );
     }
 
-    //get
+    //get by id
     @GetMapping("/{categoryId}")
     public ResponseEntity<ApiResponseDTO<CategoryResponseDTO>> getCategoryById(@PathVariable String categoryId) {
         var category = categoryService.getCategoryById(categoryId);
+        return ResponseEntity.ok(ApiResponseDTO.<CategoryResponseDTO>builder()
+                .message("Category retrieved successfully")
+                .success(true)
+                .data(category)
+                .timestamp(OffsetDateTime.now())
+                .build()
+        );
+    }
+
+    //get by slug
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<ApiResponseDTO<CategoryResponseDTO>> getCategoryBySlug(@PathVariable String slug) {
+        var category = categoryService.getBySlug(slug);
         return ResponseEntity.ok(ApiResponseDTO.<CategoryResponseDTO>builder()
                 .message("Category retrieved successfully")
                 .success(true)
@@ -84,10 +97,10 @@ public class CategoryController {
         );
     }
 
-    //get subcategories by category id
-    @GetMapping("/{categoryId}/subcategories")
-    public ResponseEntity<ApiResponseDTO<List<CategoryResponseDTO>>> getSubCategoriesByCategory(@PathVariable String categoryId) {
-        var subCategories = categoryService.getSubCategories(categoryId);
+    //get subcategories by parent slug
+    @GetMapping("/{parentSlug}/subcategories")
+    public ResponseEntity<ApiResponseDTO<List<CategoryResponseDTO>>> getSubCategoriesByCategory(@PathVariable String parentSlug) {
+        var subCategories = categoryService.getSubCategories(parentSlug);
         return ResponseEntity.ok(ApiResponseDTO.<List<CategoryResponseDTO>>builder()
                 .message("Subcategories retrieved successfully")
                 .success(true)
