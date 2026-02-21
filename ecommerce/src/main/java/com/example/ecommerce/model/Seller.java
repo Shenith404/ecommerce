@@ -14,6 +14,11 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(
+        indexes = {
+                @Index(name = "idx_seller_email", columnList = "email" ,unique = true)
+        }
+)
 public class Seller extends BaseModel {
 
     private String sellerName;
@@ -51,5 +56,9 @@ public class Seller extends BaseModel {
     @OneToMany(mappedBy = "seller",cascade=CascadeType.ALL,orphanRemoval = true)
     @JsonManagedReference
     private Set<Transaction> transactions = new HashSet<>();
+
+    @OneToOne(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Store store;
+
 
 }

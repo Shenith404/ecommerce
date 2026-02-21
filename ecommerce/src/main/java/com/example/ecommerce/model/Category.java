@@ -15,12 +15,19 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(
+        indexes = {
+                @Index(name = "idx_category_slug", columnList = "slug" ,unique = true)
+        }
+)
 public class Category  extends  BaseModel{
 
     private String name;
 
     @Column(nullable = false,unique = true)
     private String slug;
+
+    private String imgUrl;
 
     @ManyToOne
     @JsonIgnore

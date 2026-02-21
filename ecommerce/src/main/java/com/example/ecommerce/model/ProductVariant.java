@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "product_variants", indexes = {@Index(name = "idx_variant_sku", columnList = "sku", unique = true)})
 public class ProductVariant extends BaseModel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
@@ -37,4 +38,6 @@ public class ProductVariant extends BaseModel {
     private double discountPercentage;
 
     private String imageUrl;
+
+    private boolean isDefault= false;
 }
