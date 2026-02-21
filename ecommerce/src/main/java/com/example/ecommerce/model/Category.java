@@ -7,7 +7,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -39,6 +41,14 @@ public class Category  extends  BaseModel{
 
     @Column(nullable = false)
     private int level=1;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "category_brands",
+            joinColumns = @JoinColumn(name = "category_id"),
+            inverseJoinColumns = @JoinColumn(name = "brand_id")
+    )
+    private Set<Brand> brands = new HashSet<>();
 
 
 }

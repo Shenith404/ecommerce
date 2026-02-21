@@ -1,10 +1,10 @@
 package com.example.ecommerce.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -21,4 +21,8 @@ public class Brand extends BaseModel {
     private String seoSlug;
 
     private String logoUrl;
+
+    @ManyToMany(mappedBy = "brands", fetch = FetchType.LAZY)
+    private Set<Category> categories = new HashSet<>();
+
 }
