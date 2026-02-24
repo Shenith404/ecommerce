@@ -1,6 +1,7 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.dto.reponse.ApiResponseDTO;
+import com.example.ecommerce.dto.reponse.BrandResponseDTO;
 import com.example.ecommerce.dto.reponse.CategoryResponseDTO;
 import com.example.ecommerce.dto.reponse.PageResponseDTO;
 import com.example.ecommerce.dto.request.CategoryCreateRequestDTO;
@@ -8,6 +9,7 @@ import com.example.ecommerce.dto.request.CategoryUpdateRequestDTO;
 import com.example.ecommerce.service.interfaces.CategoryService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/categories")
@@ -131,6 +134,50 @@ public class CategoryController {
                 .message("Subcategories retrieved successfully")
                 .success(true)
                 .data(subCategories)
+                .timestamp(OffsetDateTime.now())
+                .build()
+        );
+    }
+
+    // get brands for category
+    @GetMapping("/{categoryId}/brands")
+    public ResponseEntity<ApiResponseDTO<List<BrandResponseDTO>>> getBrandsForCategory(
+            @PathVariable String categoryId) {
+        var brands = categoryService.getBrandsForCategory(categoryId);
+        return ResponseEntity.ok(ApiResponseDTO.<List<BrandResponseDTO>>builder()
+                .message("Brands retrieved successfully")
+                .success(true)
+                .data(brands)
+                .timestamp(OffsetDateTime.now())
+                .build()
+        );
+    }
+
+    // add brands to category
+    @PostMapping("/{categoryId}/brands")
+    public ResponseEntity<ApiResponseDTO<Void>> addBrandsToCategory(
+            @PathVariable String categoryId,
+            @RequestBody @NotEmpty(message = "Brand IDs must not be empty") Set<String> brandIds) {
+        categoryService.addBrandsToCategory(categoryId, brandIds);
+        return ResponseEntity.ok(ApiResponseDTO.<Void>builder()
+                .message("Brands added to category successfully")
+                .success(true)
+                .data(null)
+                .timestamp(OffsetDateTime.now())
+                .build()
+        );
+    }
+
+    // remove brands from category
+    @DeleteMapping("/{categoryId}/brands")
+    public ResponseEntity<ApiResponseDTO<Void>> removeBrandsFromCategory(
+            @PathVariable String categoryId,
+            @RequestBody @NotEmpty(message = "Brand IDs must not be empty") Set<String> brandIds) {
+        categoryService.removeBrandsFromCategory(categoryId, brandIds);
+        return ResponseEntity.ok(ApiResponseDTO.<Void>builder()
+                .message("Brands removed from category successfully")
+                .success(true)
+                .data(null)
                 .timestamp(OffsetDateTime.now())
                 .build()
         );

@@ -1,5 +1,6 @@
 package com.example.ecommerce.repository;
 
+import com.example.ecommerce.model.Brand;
 import com.example.ecommerce.model.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,4 +26,9 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
     boolean existsBySlug(String slug);
 
     Optional<Category> findBySlug(String slug);
+
+    boolean existsById(UUID id);
+
+    @Query("SELECT b FROM Category c JOIN c.brands b WHERE c.id = :categoryId")
+    List<Brand> findBrandsByCategoryId(UUID categoryId);
 }

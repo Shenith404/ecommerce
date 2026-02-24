@@ -19,7 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -90,6 +93,23 @@ public class BrandServiceImpl implements com.example.ecommerce.service.interface
         Brand brand = brandRepository.findBySlug(slug).
                 orElseThrow(() -> new ResourceNotFoundException("Brand not found"));
         return BrandMapper.toDto(brand);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Optional<Brand> getBrandEntityById(String brandId) {
+        return brandRepository.findById(UUID.fromString(brandId));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<Brand> getBrandEntitiesByIds(Set<String> brandIds) {
+        List<UUID> brandUuids = brandIds.stream().map(UUID::fromString).collect(Collectors.toList());
+        List<Brand> brands = brandRepository.findAllById(brandUuids);
+        if (brands.size() != brandIds.size()) {
+            throw new ResourceNotFoundException("One or more brand IDs were not found.");
+        }
+        return brands;
     }
 
     //get all

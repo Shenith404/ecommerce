@@ -1,13 +1,17 @@
 package com.example.ecommerce.service.impl;
 
+import com.example.ecommerce.dto.reponse.BrandResponseDTO;
 import com.example.ecommerce.dto.reponse.CategoryResponseDTO;
 import com.example.ecommerce.dto.reponse.PageResponseDTO;
 import com.example.ecommerce.dto.request.CategoryCreateRequestDTO;
 import com.example.ecommerce.dto.request.CategoryUpdateRequestDTO;
 import com.example.ecommerce.exception.ResourceNotFoundException;
+import com.example.ecommerce.mapper.BrandMapper;
 import com.example.ecommerce.mapper.CategoryMapper;
+import com.example.ecommerce.model.Brand;
 import com.example.ecommerce.model.Category;
 import com.example.ecommerce.repository.CategoryRepository;
+import com.example.ecommerce.service.interfaces.BrandService;
 import com.example.ecommerce.service.interfaces.CategoryService;
 import com.example.ecommerce.service.interfaces.FileUploadService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -32,6 +37,7 @@ public class CategoryServiceImpl implements CategoryService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategoryServiceImpl.class);
 
     private final CategoryRepository categoryRepository;
+    private final BrandService brandService;
     private final FileUploadService fileUploadService;
 
     //Allow only for ROLE_SELLER
@@ -132,6 +138,66 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.delete(existingCategory);
     }
 
+    //add brands to category
+    @Override
+    @Transactional
+    public void addBrandsToCategory(String categoryId, Set<String> brandIds) {
+        if (brandIds == null || brandIds.isEmpty()) return;
+
+        Category existingCategory = categoryRepository.findById(UUID.fromString(categoryId))
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
+
+        // Batch-fetch all brands in a single query — eliminates the N+1 problem
+        List<Brand> brandsToAdd = brandService.getBrandEntitiesByIds(brandIds);
+
+        // Validation is handled inside getBrandEntitiesByIds — throws if any ID is missing
+
+        int addedCount = 0;
+        for (Brand brand : brandsToAdd) {
+            // HashSet.add() returns false when the brand is already present (uses equals/hashCode on ID)
+            if (existingCategory.getBrands().add(brand)) {
+                addedCount++;
+            } else {
+                LOGGER.info("Brand with ID: {} is already associated with Category ID: {}", brand.getId(), categoryId);
+            }
+        }
+
+        categoryRepository.save(existingCategory);
+        LOGGER.info("Added {} brand(s) to Category ID: {}", addedCount, categoryId);
+    }
+
+    //remove brands from category
+    @Override
+    @Transactional
+    public void removeBrandsFromCategory(String categoryId, Set<String> brandIds) {
+        if (brandIds == null || brandIds.isEmpty()) return;
+
+        Category existingCategory = categoryRepository.findById(UUID.fromString(categoryId))
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found" ));
+
+        int before = existingCategory.getBrands().size();
+        existingCategory.getBrands().removeIf(brand -> brandIds.contains(brand.getId().toString()));
+        int removedCount = before - existingCategory.getBrands().size();
+
+        categoryRepository.save(existingCategory);
+        LOGGER.info("Removed {} brand(s) from Category ID: {}", removedCount, categoryId);
+    }
+
+    //get related brands for category
+    @Override
+    @Transactional(readOnly = true)
+    public List<BrandResponseDTO> getBrandsForCategory(String categoryId) {
+        UUID id = UUID.fromString(categoryId);
+        if (!categoryRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Category not found with id: " + categoryId);
+        }
+        return categoryRepository.findBrandsByCategoryId(id)
+                .stream()
+                .map(BrandMapper::toDto)
+                .toList();
+    }
+
+
 
     /// ///Allow for all
 
@@ -206,3 +272,4 @@ public class CategoryServiceImpl implements CategoryService {
 
 
 }
+
