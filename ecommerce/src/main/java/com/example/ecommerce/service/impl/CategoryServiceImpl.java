@@ -9,6 +9,7 @@ import com.example.ecommerce.mapper.CategoryMapper;
 import com.example.ecommerce.model.Category;
 import com.example.ecommerce.repository.CategoryRepository;
 import com.example.ecommerce.service.interfaces.CategoryService;
+import com.example.ecommerce.service.interfaces.FileUploadService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,11 +17,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,12 +32,15 @@ public class CategoryServiceImpl implements CategoryService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategoryServiceImpl.class);
 
     private final CategoryRepository categoryRepository;
+    private final FileUploadService fileUploadService;
 
     //Allow only for ROLE_SELLER
     @Override
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public CategoryResponseDTO createCategory(CategoryCreateRequestDTO requestDTO) {
+    @Transactional
+    public CategoryResponseDTO createCategory(CategoryCreateRequestDTO requestDTO, MultipartFile image) throws IOException {
         Category category = CategoryMapper.toEntity(requestDTO);
+        String imageUrl = fileUploadService.uploadImage(image);
+        category.setImgUrl(imageUrl);
         if(requestDTO.getParentCategoryId() != null) {
             Category parentCategory = categoryRepository.findById(UUID.fromString(requestDTO.getParentCategoryId()))
                     .orElseThrow(() -> new ResourceNotFoundException("Parent category not found with id: " + requestDTO.getParentCategoryId()));
@@ -50,8 +55,8 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public CategoryResponseDTO updateCategory(CategoryUpdateRequestDTO requestDTO) {
+    @Transactional
+    public CategoryResponseDTO updateCategoryDetails(CategoryUpdateRequestDTO requestDTO) {
         Category existingCategory = categoryRepository.findById(UUID.fromString(requestDTO.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + requestDTO.getId()));
 
@@ -78,8 +83,28 @@ public class CategoryServiceImpl implements CategoryService {
         return CategoryMapper.toDto(updatedCategory);
     }
 
+    //update image only
+    @Transactional
     @Override
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public CategoryResponseDTO updateCategoryImage(String categoryId, MultipartFile image) throws IOException {
+        Category existingCategory = categoryRepository.findById(UUID.fromString(categoryId))
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
+
+        //delete old image
+        if(existingCategory.getImgUrl() != null) {
+            fileUploadService.deleteImage(existingCategory.getImgUrl());
+        }
+        String newImageUrl = fileUploadService.uploadImage(image);
+        existingCategory.setImgUrl(newImageUrl);
+        var updatedCategory= categoryRepository.save(existingCategory);
+        LOGGER.info("Updated image for Category with ID: {}", updatedCategory.getId());
+        return CategoryMapper.toDto(updatedCategory);
+    }
+
+
+
+    @Override
+    @Transactional
     public void deleteCategory(String categoryId) {
         Category existingCategory = categoryRepository.findById(UUID.fromString(categoryId))
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
@@ -90,44 +115,49 @@ public class CategoryServiceImpl implements CategoryService {
     /// ///Allow for all
 
     @Override
+    @Transactional(readOnly = true)
     public CategoryResponseDTO getCategoryById(String categoryId) {
         Category existingCategory = categoryRepository.findById(UUID.fromString(categoryId))
-                    .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
         return CategoryMapper.toDto(existingCategory);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Category> getCategoryEntityById(String categoryId) {
         return categoryRepository.findById(UUID.fromString(categoryId));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PageResponseDTO<CategoryResponseDTO> getAllCategories(String search, int page, int size, String[] sort) {
         Sort.Direction direction = sort[1].equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
 
         Page<Category> currentPage;
         int currentPageNumber=pageable.getPageNumber();
-        List<CategoryResponseDTO> contests;
-        if (!Objects.equals(search, "") && search != null) {
+        List<CategoryResponseDTO> categories;
+        if (search != null && !search.isBlank()) {
             currentPage =categoryRepository.findBySearchKey(search, pageable);
         } else {
             currentPage = categoryRepository.findAll(pageable);
         }
-        contests = (currentPage.getContent()).stream().map(CategoryMapper::toDto).toList();
+        categories = (currentPage.getContent()).stream().map(CategoryMapper::toDto).toList();
 
-        LOGGER.info("Retrieved {} contests", contests.size());
+        LOGGER.info("Retrieved {} contests", categories.size());
 
-        return new PageResponseDTO<CategoryResponseDTO>(currentPageNumber,currentPage.getTotalPages(), contests);
+        return new PageResponseDTO<CategoryResponseDTO>(currentPageNumber,currentPage.getTotalPages(), categories);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CategoryResponseDTO> getSubCategories(String parentSlug) {
         List<Category> childCategories = categoryRepository.findByParentSlug(parentSlug);
         return childCategories.stream().map(CategoryMapper::toDto).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CategoryResponseDTO getBySlug(String slug) {
         Category category = categoryRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with slug: " + slug));
@@ -146,6 +176,9 @@ public class CategoryServiceImpl implements CategoryService {
         while (categoryRepository.existsBySlug(candidate)
                 && !candidate.equals(currentSlug)) {
             candidate = baseSlug + "-" + counter++;
+            if(counter > 100) { // safety check to prevent infinite loop
+                throw new IllegalArgumentException("Unable to generate unique slug for title: " + title);
+            }
         }
         return candidate;
     }

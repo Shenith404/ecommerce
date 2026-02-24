@@ -29,6 +29,7 @@ public class Category  extends  BaseModel{
     @Column(nullable = false,unique = true)
     private String slug;
 
+    @Column(length = 500)
     private String imgUrl;
 
     @ManyToOne

@@ -10,7 +10,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -22,8 +24,8 @@ public class CategoryController {
 
     //create
     @PostMapping("/create")
-    public ResponseEntity<ApiResponseDTO<CategoryResponseDTO>> createCategory(@Valid @RequestBody CategoryCreateRequestDTO category){
-        var createdCategory = categoryService.createCategory(category);
+    public ResponseEntity<ApiResponseDTO<CategoryResponseDTO>> createCategory(@RequestPart("category") @Valid CategoryCreateRequestDTO category ,@RequestPart("image") MultipartFile image) throws IOException {
+        var createdCategory = categoryService.createCategory(category, image);
         return ResponseEntity.ok(ApiResponseDTO.<CategoryResponseDTO>builder()
                 .message("Category created successfully")
                 .success(true)
@@ -35,8 +37,8 @@ public class CategoryController {
 
     //update
     @PatchMapping("/update")
-    public ResponseEntity<ApiResponseDTO<CategoryResponseDTO>> updateCategory(@Valid @RequestBody CategoryUpdateRequestDTO category) {
-        var updatedCategory = categoryService.updateCategory(category);
+    public ResponseEntity<ApiResponseDTO<CategoryResponseDTO>> updateCategoryDetails(@Valid @RequestBody CategoryUpdateRequestDTO category) {
+        var updatedCategory = categoryService.updateCategoryDetails(category);
         return ResponseEntity.ok(ApiResponseDTO.<CategoryResponseDTO>builder()
                 .message("Category updated successfully")
                 .success(true)
@@ -46,7 +48,20 @@ public class CategoryController {
         );
     }
 
-        //delete
+    //update image
+    @PatchMapping("/update/{categoryId}/image")
+    public ResponseEntity<ApiResponseDTO<CategoryResponseDTO>> updateCategoryImage(@PathVariable String categoryId, @RequestPart("image") MultipartFile image) throws IOException {
+        var updatedCategory = categoryService.updateCategoryImage(categoryId, image);
+        return ResponseEntity.ok(ApiResponseDTO.<CategoryResponseDTO>builder()
+                .message("Category image updated successfully")
+                .success(true)
+                .data(updatedCategory)
+                .timestamp(OffsetDateTime.now())
+                .build()
+        );
+    }
+
+    //delete
     @DeleteMapping("/delete/{categoryId}")
     public ResponseEntity<ApiResponseDTO<Void>> deleteCategory(@PathVariable String categoryId) {
         categoryService.deleteCategory(categoryId);
@@ -60,7 +75,7 @@ public class CategoryController {
     }
 
     //get by id
-    @GetMapping("/{categoryId}")
+    @GetMapping("id/{categoryId}")
     public ResponseEntity<ApiResponseDTO<CategoryResponseDTO>> getCategoryById(@PathVariable String categoryId) {
         var category = categoryService.getCategoryById(categoryId);
         return ResponseEntity.ok(ApiResponseDTO.<CategoryResponseDTO>builder()
