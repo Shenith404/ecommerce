@@ -6,9 +6,11 @@ import com.example.ecommerce.dto.reponse.PageResponseDTO;
 import com.example.ecommerce.dto.request.BrandCreateRequestDTO;
 import com.example.ecommerce.service.interfaces.BrandService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +20,7 @@ import java.time.OffsetDateTime;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/brands")
+@Validated
 public class BrandController {
 
     private final BrandService brandService;
@@ -25,8 +28,10 @@ public class BrandController {
     // Create brand (admin only)
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponseDTO<BrandResponseDTO>> createBrand(
-            @Valid @RequestPart("brand") BrandCreateRequestDTO dto,
+            @RequestPart("name") @NotBlank(message = "Brand name is required") String name,
             @RequestPart("image") MultipartFile image) throws IOException {
+        BrandCreateRequestDTO dto = new BrandCreateRequestDTO();
+        dto.setName(name);
         var created = brandService.createBrand(dto, image);
         return ResponseEntity.ok(
                 ApiResponseDTO.<BrandResponseDTO>builder()

@@ -104,7 +104,7 @@ public class BrandServiceImpl implements com.example.ecommerce.service.interface
         Page<Brand> currentPage;
         int currentPageNumber = pageable.getPageNumber();
         List<BrandResponseDTO> brands;
-        if (!Objects.equals(search, "") && search != null) {
+        if ( search != null && !search.isBlank()) {
             currentPage = brandRepository.findBySearchKey(search, pageable);
         } else {
             currentPage = brandRepository.findAll(pageable);
@@ -130,9 +130,12 @@ public class BrandServiceImpl implements com.example.ecommerce.service.interface
         String candidate = baseSlug;
         int counter = 1;
 
-        while (brandRepository.existsBySlug(candidate)
+        while (brandRepository.existsBySeoSlug(candidate)
                 && !candidate.equals(currentSlug)) {
             candidate = baseSlug + "-" + counter++;
+            if(counter > 100) { // safety check to prevent infinite loop
+                throw new IllegalArgumentException("Unable to generate unique slug for title: " + title);
+            }
         }
         return candidate;
     }

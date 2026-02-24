@@ -20,6 +20,7 @@ public class Brand extends BaseModel {
     @Column(nullable = false, unique = true)
     private String seoSlug;
 
+    @Column(length = 500)
     private String logoUrl;
 
     @ManyToMany(mappedBy = "brands", fetch = FetchType.LAZY)
