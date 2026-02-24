@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -18,6 +19,8 @@ public class ProductResponseDTO {
     private String slug;
     private String title;
     private String description;
+    private String itemCondition;
+    private Map<String ,String> specifications;
     private int numRatings;
     private double averageRating;
     private List<ProductVariantResponseDTO> productVariants;

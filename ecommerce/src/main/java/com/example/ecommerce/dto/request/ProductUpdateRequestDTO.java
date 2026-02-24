@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -21,5 +23,13 @@ public class ProductUpdateRequestDTO {
     private String description;
 
     private String  categoryId;
+
+    private String brandId;
+
+    private String storeId;
+
+     private String itemCondition; // New, Used, Refurbished
+
+     private Map<String ,String> specifications; // JSON string of specifications
 
 }

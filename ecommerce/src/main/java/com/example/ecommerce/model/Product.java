@@ -32,6 +32,7 @@ public class Product  extends BaseModel{
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+
     private ItemCondition itemCondition; // New, Used, Refurbished
 
     @JdbcTypeCode(SqlTypes.JSON)

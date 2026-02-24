@@ -1,6 +1,7 @@
 package com.example.ecommerce.service.impl;
 
 import com.example.ecommerce.config.JwtProvider;
+import com.example.ecommerce.domain.ItemCondition;
 import com.example.ecommerce.dto.reponse.PageResponseDTO;
 import com.example.ecommerce.dto.reponse.ProductResponseDTO;
 import com.example.ecommerce.dto.request.ProductCreateRequestDTO;
@@ -9,9 +10,7 @@ import com.example.ecommerce.exception.ResourceNotFoundException;
 import com.example.ecommerce.mapper.ProductMapper;
 import com.example.ecommerce.model.Product;
 import com.example.ecommerce.repository.ProductRepository;
-import com.example.ecommerce.service.interfaces.CategoryService;
-import com.example.ecommerce.service.interfaces.ProductService;
-import com.example.ecommerce.service.interfaces.SellerService;
+import com.example.ecommerce.service.interfaces.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +35,8 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
+    private final BrandService bandService;
+    private final StoreService storeService;
     private final SellerService sellerService;
     private final JwtProvider jwtProvider;
 
@@ -51,6 +52,23 @@ public class ProductServiceImpl implements ProductService {
                         ()-> new ResourceNotFoundException("Category not found with id ")
                 );
         product.setCategory(category);
+        //set brand
+        if(requestDTO.getBrandId() != null){
+            var brand = bandService.getBrandEntityById(requestDTO.getBrandId())
+                    .orElseThrow(
+                            ()-> new ResourceNotFoundException("Brand not found with id ")
+                    );
+            product.setBrand(brand);
+        }
+        //set store
+        if(requestDTO.getStoreId() != null){
+            var store = storeService.getStoreEntityById(requestDTO.getStoreId())
+                    .orElseThrow(
+                            ()-> new ResourceNotFoundException("Store not found with id ")
+                    );
+            product.setStore(store);
+        }
+
         //set seller
         //get email from token
         String sellerEmail = jwtProvider.getEmailFromHeader();
@@ -84,6 +102,13 @@ public class ProductServiceImpl implements ProductService {
         if(requestDTO.getDescription() != null){
             product.setDescription(requestDTO.getDescription());
         }
+        if(requestDTO.getItemCondition() != null){
+            product.setItemCondition(ItemCondition.valueOf(requestDTO.getItemCondition()));
+        }
+        if(requestDTO.getSpecifications() != null){
+            product.setSpecifications(requestDTO.getSpecifications());
+        }
+
         if(requestDTO.getCategoryId() != null){
             var category = categoryService.getCategoryEntityById(requestDTO.getCategoryId())
                     .orElseThrow(
@@ -91,6 +116,21 @@ public class ProductServiceImpl implements ProductService {
                     );
             product.setCategory(category);
         }
+        if(requestDTO.getBrandId() != null){
+            var brand = bandService.getBrandEntityById(requestDTO.getBrandId())
+                    .orElseThrow(
+                            ()-> new ResourceNotFoundException("Brand not found with id ")
+                    );
+            product.setBrand(brand);
+        }
+        if(requestDTO.getStoreId() != null){
+            var store = storeService.getStoreEntityById(requestDTO.getStoreId())
+                    .orElseThrow(
+                            ()-> new ResourceNotFoundException("Store not found with id ")
+                    );
+            product.setStore(store);
+        }
+
         return ProductMapper.toDto(productRepository.save(product));
     }
 
@@ -151,7 +191,7 @@ public class ProductServiceImpl implements ProductService {
         Page<Product> currentPage;
         int currentPageNumber = pageable.getPageNumber();
         List<ProductResponseDTO> products;
-        if (!Objects.equals(search, "") && search != null) {
+        if (search != null && !search.isBlank()) {
             currentPage = productRepository.findSellerProductsBySearchKey(search, sellerEmail, pageable);
         } else {
             currentPage = productRepository.findAllSellerProducts(sellerEmail, pageable);
@@ -178,7 +218,7 @@ public class ProductServiceImpl implements ProductService {
         Page<Product> currentPage;
         int currentPageNumber = pageable.getPageNumber();
         List<ProductResponseDTO> products;
-        if (!Objects.equals(search, "") && search != null) {
+        if (search != null && !search.isBlank()) {
             currentPage = productRepository.findCategoryProductsBySearchKey(categorySlug, search, pageable);
         } else {
             currentPage = productRepository.findAllCategoryProducts(categorySlug, pageable);
@@ -207,7 +247,7 @@ public class ProductServiceImpl implements ProductService {
         Page<Product> currentPage;
         int currentPageNumber = pageable.getPageNumber();
         List<ProductResponseDTO> products;
-        if (!Objects.equals(search, "") && search != null) {
+        if (search != null && !search.isBlank()) {
             currentPage = productRepository.findSellerProductsBySearchKey(search, sellerEmail, pageable);
         } else {
             currentPage = productRepository.findAllSellerProducts(sellerEmail, pageable);
@@ -234,7 +274,7 @@ public class ProductServiceImpl implements ProductService {
         Page<Product> currentPage;
         int currentPageNumber = pageable.getPageNumber();
         List<ProductResponseDTO> products;
-        if (!Objects.equals(search, "") && search != null) {
+        if (search != null && !search.isBlank()) {
             currentPage = productRepository.findBySearchKey(search, pageable);
         } else {
             currentPage = productRepository.findAll(pageable);
