@@ -15,4 +15,5 @@ public class CategoryResponseDTO {
     private String slug;
     private String parentCategoryId;
     private String level;
+    private String imgUrl;
 }

@@ -12,6 +12,7 @@ public class CategoryMapper {
                 .slug(category.getSlug())
                 .parentCategoryId(category.getParent() != null ?  category.getParent().getId().toString() : null)
                 .level(String.valueOf(category.getLevel()))
+                .imgUrl(category.getImgUrl()==null ? null : category.getImgUrl())
                 .build();
     }
     public static Category toEntity(CategoryCreateRequestDTO requestDTO) {

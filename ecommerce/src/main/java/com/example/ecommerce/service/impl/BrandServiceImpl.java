@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -33,7 +32,10 @@ public class BrandServiceImpl implements com.example.ecommerce.service.interface
     @Transactional
     public BrandResponseDTO createBrand(BrandCreateRequestDTO dto, MultipartFile image) throws IOException {
 
-        String logoUrl = fileUploadService.uploadImage(image);
+        String logoUrl =null;
+        if(image != null) {
+            logoUrl = fileUploadService.uploadImage(image);
+        }
         String uniqueSlug = generateUniqueSlug(dto.getName(), null);
 
         Brand newBrand = Brand.builder()

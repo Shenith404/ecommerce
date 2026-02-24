@@ -7,7 +7,9 @@ import com.example.ecommerce.dto.request.CategoryCreateRequestDTO;
 import com.example.ecommerce.dto.request.CategoryUpdateRequestDTO;
 import com.example.ecommerce.service.interfaces.CategoryService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,9 +25,16 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     //create
-    @PostMapping("/create")
-    public ResponseEntity<ApiResponseDTO<CategoryResponseDTO>> createCategory(@RequestPart("category") @Valid CategoryCreateRequestDTO category ,@RequestPart("image") MultipartFile image) throws IOException {
-        var createdCategory = categoryService.createCategory(category, image);
+    @PostMapping(value = "/create",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponseDTO<CategoryResponseDTO>> createCategory(
+            @RequestPart("name") @NotBlank(message = "Brand name is required") String name,
+            @RequestPart(value = "parentCategoryId", required = false) String parentCategoryId,
+            @RequestPart(value = "image" ,required = false) MultipartFile image) throws IOException {
+        var createdCategory = categoryService.createCategory(
+                CategoryCreateRequestDTO.builder()
+                        .name(name)
+                        .parentCategoryId(parentCategoryId)
+                        .build(), image);
         return ResponseEntity.ok(ApiResponseDTO.<CategoryResponseDTO>builder()
                 .message("Category created successfully")
                 .success(true)
@@ -49,8 +58,10 @@ public class CategoryController {
     }
 
     //update image
-    @PatchMapping("/update/{categoryId}/image")
-    public ResponseEntity<ApiResponseDTO<CategoryResponseDTO>> updateCategoryImage(@PathVariable String categoryId, @RequestPart("image") MultipartFile image) throws IOException {
+    @PatchMapping(value = "/update/{categoryId}/image",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponseDTO<CategoryResponseDTO>> updateCategoryImage(
+            @PathVariable String categoryId,
+            @RequestPart("image") MultipartFile image) throws IOException {
         var updatedCategory = categoryService.updateCategoryImage(categoryId, image);
         return ResponseEntity.ok(ApiResponseDTO.<CategoryResponseDTO>builder()
                 .message("Category image updated successfully")

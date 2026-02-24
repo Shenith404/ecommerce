@@ -29,7 +29,7 @@ public class BrandController {
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponseDTO<BrandResponseDTO>> createBrand(
             @RequestPart("name") @NotBlank(message = "Brand name is required") String name,
-            @RequestPart("image") MultipartFile image) throws IOException {
+            @RequestPart(value = "image" ,required = false) MultipartFile image) throws IOException {
         BrandCreateRequestDTO dto = new BrandCreateRequestDTO();
         dto.setName(name);
         var created = brandService.createBrand(dto, image);

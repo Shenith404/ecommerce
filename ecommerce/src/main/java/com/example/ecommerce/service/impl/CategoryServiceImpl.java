@@ -39,7 +39,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryResponseDTO createCategory(CategoryCreateRequestDTO requestDTO, MultipartFile image) throws IOException {
         Category category = CategoryMapper.toEntity(requestDTO);
-        String imageUrl = fileUploadService.uploadImage(image);
+        String imageUrl =null;
+        if(image != null) {
+             imageUrl = fileUploadService.uploadImage(image);
+        }
         category.setImgUrl(imageUrl);
         if(requestDTO.getParentCategoryId() != null) {
             Category parentCategory = categoryRepository.findById(UUID.fromString(requestDTO.getParentCategoryId()))
@@ -63,17 +66,35 @@ public class CategoryServiceImpl implements CategoryService {
         // Update name and slug if name is provided
         if(requestDTO.getName() != null && !requestDTO.getName().trim().isEmpty()) {
             existingCategory.setName(requestDTO.getName());
-
                   // Trim dashes from ends
             existingCategory.setSlug(generateUniqueSlug(requestDTO.getName(),existingCategory.getSlug()));
         }
 
         // Update parent category if provided
         if(requestDTO.getParentCategoryId() != null) {
-            if(existingCategory.getId().equals(UUID.fromString(requestDTO.getParentCategoryId()))) {
+            UUID newParentId = UUID.fromString(requestDTO.getParentCategoryId());
+
+            // A category cannot be its own parent
+            if(existingCategory.getId().equals(newParentId)) {
                 throw new IllegalArgumentException("A category cannot be its own parent.");
             }
-            Category parentCategory = categoryRepository.findById(UUID.fromString(requestDTO.getParentCategoryId()))
+
+            // Check for circular reference:
+            // Walk UP the ancestor chain of the new parent candidate.
+            // If we encounter existingCategory along the way, setting newParent
+            // would create a cycle (existingCategory -> ... -> newParent -> ... -> existingCategory).
+            String ancestorId = requestDTO.getParentCategoryId();
+            while (ancestorId != null) {
+                final String currentAncestorId = ancestorId;
+                Category ancestor = categoryRepository.findById(UUID.fromString(currentAncestorId))
+                        .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + currentAncestorId));
+                if(ancestor.getId().equals(existingCategory.getId())) {
+                    throw new IllegalArgumentException("Circular reference detected. The specified parent category is a descendant of the current category.");
+                }
+                ancestorId = ancestor.getParent() != null ? ancestor.getParent().getId().toString() : null;
+            }
+
+            Category parentCategory = categoryRepository.findById(newParentId)
                     .orElseThrow(() -> new ResourceNotFoundException("Parent category not found with id: " + requestDTO.getParentCategoryId()));
             existingCategory.setParent(parentCategory);
             existingCategory.setLevel(parentCategory.getLevel() + 1);
@@ -144,7 +165,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         categories = (currentPage.getContent()).stream().map(CategoryMapper::toDto).toList();
 
-        LOGGER.info("Retrieved {} contests", categories.size());
+        LOGGER.info("Retrieved {} ", categories.size());
 
         return new PageResponseDTO<CategoryResponseDTO>(currentPageNumber,currentPage.getTotalPages(), categories);
     }
