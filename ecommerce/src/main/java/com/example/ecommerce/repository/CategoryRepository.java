@@ -2,6 +2,7 @@ package com.example.ecommerce.repository;
 
 import com.example.ecommerce.model.Brand;
 import com.example.ecommerce.model.Category;
+import com.example.ecommerce.model.SpecificationKey;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,4 +32,7 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
     @Query("SELECT b FROM Category c JOIN c.brands b WHERE c.id = :categoryId")
     List<Brand> findBrandsByCategoryId(UUID categoryId);
+
+    @Query("SELECT s FROM Category c JOIN c.specificationKeys s WHERE c.id = :categoryId")
+    List<SpecificationKey> findSpecificationKeysByCategoryId(UUID categoryId);
 }

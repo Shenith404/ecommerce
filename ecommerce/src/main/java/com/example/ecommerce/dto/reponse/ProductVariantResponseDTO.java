@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 @Data
 @Builder
@@ -17,10 +18,6 @@ public class ProductVariantResponseDTO {
 
     private String sku; // Unique Stock Keeping Unit (e.g., TS-RED-LGE)
 
-    private String color;
-
-    private String size;
-
     private int stockQuantity;
     // Use BigDecimal for Money in Production!
     private BigDecimal mrpPrice;
@@ -30,4 +27,6 @@ public class ProductVariantResponseDTO {
     private double discountPercentage;
 
     private String imageUrl;
+
+    private Map<String ,String > specifications;
 }

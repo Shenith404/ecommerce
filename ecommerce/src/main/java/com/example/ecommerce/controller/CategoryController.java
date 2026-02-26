@@ -4,6 +4,7 @@ import com.example.ecommerce.dto.reponse.ApiResponseDTO;
 import com.example.ecommerce.dto.reponse.BrandResponseDTO;
 import com.example.ecommerce.dto.reponse.CategoryResponseDTO;
 import com.example.ecommerce.dto.reponse.PageResponseDTO;
+import com.example.ecommerce.dto.reponse.SpecificationKeyResponseDTO;
 import com.example.ecommerce.dto.request.CategoryCreateRequestDTO;
 import com.example.ecommerce.dto.request.CategoryUpdateRequestDTO;
 import com.example.ecommerce.service.interfaces.CategoryService;
@@ -176,6 +177,50 @@ public class CategoryController {
         categoryService.removeBrandsFromCategory(categoryId, brandIds);
         return ResponseEntity.ok(ApiResponseDTO.<Void>builder()
                 .message("Brands removed from category successfully")
+                .success(true)
+                .data(null)
+                .timestamp(OffsetDateTime.now())
+                .build()
+        );
+    }
+
+    // get specification keys for category
+    @GetMapping("/{categoryId}/specification-keys")
+    public ResponseEntity<ApiResponseDTO<List<SpecificationKeyResponseDTO>>> getSpecificationKeysForCategory(
+            @PathVariable String categoryId) {
+        var specKeys = categoryService.getSpecificationKeysForCategory(categoryId);
+        return ResponseEntity.ok(ApiResponseDTO.<List<SpecificationKeyResponseDTO>>builder()
+                .message("Specification keys retrieved successfully")
+                .success(true)
+                .data(specKeys)
+                .timestamp(OffsetDateTime.now())
+                .build()
+        );
+    }
+
+    // add specification keys to category
+    @PostMapping("/{categoryId}/specification-keys")
+    public ResponseEntity<ApiResponseDTO<Void>> addSpecificationKeysToCategory(
+            @PathVariable String categoryId,
+            @RequestBody @NotEmpty(message = "Specification key IDs must not be empty") Set<String> specKeyIds) {
+        categoryService.addSpecificationKeysToCategory(categoryId, specKeyIds);
+        return ResponseEntity.ok(ApiResponseDTO.<Void>builder()
+                .message("Specification keys added to category successfully")
+                .success(true)
+                .data(null)
+                .timestamp(OffsetDateTime.now())
+                .build()
+        );
+    }
+
+    // remove specification keys from category
+    @DeleteMapping("/{categoryId}/specification-keys")
+    public ResponseEntity<ApiResponseDTO<Void>> removeSpecificationKeysFromCategory(
+            @PathVariable String categoryId,
+            @RequestBody @NotEmpty(message = "Specification key IDs must not be empty") Set<String> specKeyIds) {
+        categoryService.removeSpecificationKeysFromCategory(categoryId, specKeyIds);
+        return ResponseEntity.ok(ApiResponseDTO.<Void>builder()
+                .message("Specification keys removed from category successfully")
                 .success(true)
                 .data(null)
                 .timestamp(OffsetDateTime.now())

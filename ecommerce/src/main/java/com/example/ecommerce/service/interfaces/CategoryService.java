@@ -3,6 +3,7 @@ package com.example.ecommerce.service.interfaces;
 import com.example.ecommerce.dto.reponse.BrandResponseDTO;
 import com.example.ecommerce.dto.reponse.CategoryResponseDTO;
 import com.example.ecommerce.dto.reponse.PageResponseDTO;
+import com.example.ecommerce.dto.reponse.SpecificationKeyResponseDTO;
 import com.example.ecommerce.dto.request.CategoryCreateRequestDTO;
 import com.example.ecommerce.dto.request.CategoryUpdateRequestDTO;
 import com.example.ecommerce.model.Category;
@@ -22,6 +23,9 @@ public interface CategoryService {
     public void addBrandsToCategory(String categoryId, Set<String> brandIds);
     public void removeBrandsFromCategory(String categoryId, Set<String> brandIds);
     public List<BrandResponseDTO> getBrandsForCategory(String categoryId);
+    public void addSpecificationKeysToCategory(String categoryId, Set<String> specKeyIds);
+    public void removeSpecificationKeysFromCategory(String categoryId, Set<String> specKeyIds);
+    public List<SpecificationKeyResponseDTO> getSpecificationKeysForCategory(String categoryId);
     public CategoryResponseDTO getCategoryById(String categoryId);
     public Optional<Category> getCategoryEntityById(String categoryId);
     public PageResponseDTO<CategoryResponseDTO> getAllCategories(String search, int page, int size, String[] sort);

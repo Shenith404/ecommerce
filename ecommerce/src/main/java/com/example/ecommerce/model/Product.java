@@ -16,9 +16,10 @@ import java.util.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table( indexes = {
-        @Index(name = "idx_product_slug", columnList = "seoSlug", unique = true),
-        @Index(name = "idx_product_condition", columnList = "itemCondition")
+@Table(
+        indexes = {
+        @Index(name = "idx_product_slug", columnList = "seo_slug", unique = true),
+        @Index(name = "idx_product_condition", columnList = "item_condition")
 })
 public class Product  extends BaseModel{
 
@@ -32,7 +33,6 @@ public class Product  extends BaseModel{
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-
     private ItemCondition itemCondition; // New, Used, Refurbished
 
     @JdbcTypeCode(SqlTypes.JSON)

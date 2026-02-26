@@ -10,6 +10,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -36,5 +38,7 @@ public class ProductVariantCreateRequestDTO {
     @NotNull(message = "Selling Price is mandatory")
     @PositiveOrZero(message = "Selling Price must be zero or positive")
     private BigDecimal sellingPrice;
+
+    private Map<String, String> specifications ;
 
 }

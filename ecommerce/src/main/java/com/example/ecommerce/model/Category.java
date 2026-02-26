@@ -51,5 +51,7 @@ public class Category  extends  BaseModel{
     )
     private Set<Brand> brands = new HashSet<>();
 
+    @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
+    private Set<SpecificationKey> specificationKeys = new HashSet<>();
 
 }

@@ -10,24 +10,22 @@ public class ProductVariantMapper {
         return ProductVariantResponseDTO.builder()
                 .id(productVariant.getId().toString())
                 .sku(productVariant.getSku())
-                .color(productVariant.getColor())
-                .size(productVariant.getSize())
                 .discountPercentage(productVariant.getDiscountPercentage())
                 .stockQuantity(productVariant.getStockQuantity())
                 .mrpPrice(productVariant.getMrpPrice())
                 .sellingPrice(productVariant.getSellingPrice())
                 .imageUrl(productVariant.getImageUrl())
+                .specifications(productVariant.getSpecifications())
                 .build();
 
     }
     public static ProductVariant toEntity(ProductVariantCreateRequestDTO dto) {
         return ProductVariant.builder()
                 .sku(dto.getSku())
-                .color(dto.getColor())
-                .size(dto.getSize())
                 .stockQuantity(dto.getStockQuantity())
                 .mrpPrice(dto.getMrpPrice())
                 .sellingPrice(dto.getSellingPrice())
+                .specifications(dto.getSpecifications())
                 .build();
     }
 

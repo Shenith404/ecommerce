@@ -12,7 +12,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "brands", indexes = {@Index(name = "idx_brand_slug", columnList = "seoSlug", unique = true)})
+@Table(name = "brands", indexes = {@Index(name = "idx_brand_slug", columnList = "seo_slug", unique = true)})
 public class Brand extends BaseModel {
     @Column(nullable = false, unique = true)
     private String name;

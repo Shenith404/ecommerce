@@ -82,8 +82,6 @@ public class ProductVariantServiceImpl implements ProductVariantService {
             throw new IllegalArgumentException("Selling price cannot exceed MRP");
         }
 
-        if (dto.getColor() != null) variant.setColor(dto.getColor());
-        if (dto.getSize() != null) variant.setSize(dto.getSize());
         variant.setMrpPrice(dto.getMrpPrice());
         variant.setSellingPrice(dto.getSellingPrice());
 

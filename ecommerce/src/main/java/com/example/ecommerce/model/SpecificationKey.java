@@ -17,8 +17,14 @@ public class SpecificationKey extends BaseModel {
     @Column(nullable = false, unique = true)
     private String name; // e.g., "RAM", "Material"
 
+    @Builder.Default
     private boolean isRequired = false;
 
+    @Builder.Default
+    @OneToMany(mappedBy = "specificationKey", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<SpecificationOption> options = new HashSet<>();
+
+    @Builder.Default
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "category_specifications",

@@ -9,7 +9,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "stores", indexes = {@Index(name = "idx_store_slug", columnList = "seoSlug", unique = true)})
+@Table(name = "stores", indexes = {@Index(name = "idx_store_slug", columnList = "seo_slug", unique = true)})
 public class Store extends BaseModel {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)

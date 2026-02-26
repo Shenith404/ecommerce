@@ -1,11 +1,11 @@
 package com.example.ecommerce.repository;
 
-import com.example.ecommerce.model.Store;
+import com.example.ecommerce.model.SpecificationOption;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
 @Repository
-public interface StoreRepository extends JpaRepository<Store, UUID> {
+public interface SpecificationOptionRepository extends JpaRepository<SpecificationOption, UUID> {
 }

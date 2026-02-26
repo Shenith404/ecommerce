@@ -3,17 +3,21 @@ package com.example.ecommerce.service.impl;
 import com.example.ecommerce.dto.reponse.BrandResponseDTO;
 import com.example.ecommerce.dto.reponse.CategoryResponseDTO;
 import com.example.ecommerce.dto.reponse.PageResponseDTO;
+import com.example.ecommerce.dto.reponse.SpecificationKeyResponseDTO;
 import com.example.ecommerce.dto.request.CategoryCreateRequestDTO;
 import com.example.ecommerce.dto.request.CategoryUpdateRequestDTO;
 import com.example.ecommerce.exception.ResourceNotFoundException;
 import com.example.ecommerce.mapper.BrandMapper;
 import com.example.ecommerce.mapper.CategoryMapper;
+import com.example.ecommerce.mapper.SpecificationKeyMapper;
 import com.example.ecommerce.model.Brand;
 import com.example.ecommerce.model.Category;
+import com.example.ecommerce.model.SpecificationKey;
 import com.example.ecommerce.repository.CategoryRepository;
 import com.example.ecommerce.service.interfaces.BrandService;
 import com.example.ecommerce.service.interfaces.CategoryService;
 import com.example.ecommerce.service.interfaces.FileUploadService;
+import com.example.ecommerce.service.interfaces.SpecificationKeyService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final BrandService brandService;
+    private final SpecificationKeyService specificationKeyService;
     private final FileUploadService fileUploadService;
 
     //Allow only for ROLE_SELLER
@@ -196,6 +201,72 @@ public class CategoryServiceImpl implements CategoryService {
                 .map(BrandMapper::toDto)
                 .toList();
     }
+    //add specification keys to category
+    @Override
+    @Transactional
+    public void addSpecificationKeysToCategory(String categoryId, Set<String> specKeyIds) {
+        if (specKeyIds == null || specKeyIds.isEmpty()) return;
+
+        Category existingCategory = categoryRepository.findById(UUID.fromString(categoryId))
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
+
+        // Batch-fetch all specification keys in a single query
+        List<SpecificationKey> specKeysToAdd = specificationKeyService.getSpecificationKeyEntitiesByIds(specKeyIds);
+
+        int addedCount = 0;
+        for (SpecificationKey specKey : specKeysToAdd) {
+            if (existingCategory.getSpecificationKeys().add(specKey)) {
+                specKey.getCategories().add(existingCategory);
+                addedCount++;
+            } else {
+                LOGGER.info("Specification key with ID: {} is already associated with Category ID: {}", specKey.getId(), categoryId);
+            }
+        }
+
+        categoryRepository.save(existingCategory);
+        LOGGER.info("Added {} specification key(s) to Category ID: {}", addedCount, categoryId);
+    }
+
+    //remove specification keys from category
+    @Override
+    @Transactional
+    public void removeSpecificationKeysFromCategory(String categoryId, Set<String> specKeyIds) {
+        if (specKeyIds == null || specKeyIds.isEmpty()) return;
+
+        Category existingCategory = categoryRepository.findById(UUID.fromString(categoryId))
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
+
+        int before = existingCategory.getSpecificationKeys().size();
+        
+        // Remove from both sides of the bidirectional relationship
+        existingCategory.getSpecificationKeys().removeIf(specKey -> {
+            boolean shouldRemove = specKeyIds.contains(specKey.getId().toString());
+            if (shouldRemove) {
+                specKey.getCategories().remove(existingCategory);
+            }
+            return shouldRemove;
+        });
+        
+        int removedCount = before - existingCategory.getSpecificationKeys().size();
+
+        categoryRepository.save(existingCategory);
+        LOGGER.info("Removed {} specification key(s) from Category ID: {}", removedCount, categoryId);
+    }
+
+    //get specification keys for category
+    @Override
+    @Transactional(readOnly = true)
+    public List<SpecificationKeyResponseDTO> getSpecificationKeysForCategory(String categoryId) {
+        UUID id = UUID.fromString(categoryId);
+        if (!categoryRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Category not found with id: " + categoryId);
+        }
+        return categoryRepository.findSpecificationKeysByCategoryId(id)
+                .stream()
+                .map(SpecificationKeyMapper::toDto)
+                .toList();
+    }
+
 
 
 

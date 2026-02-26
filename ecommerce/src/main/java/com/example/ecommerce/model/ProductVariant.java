@@ -3,8 +3,13 @@ package com.example.ecommerce.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -12,7 +17,7 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "product_variants", indexes = {@Index(name = "idx_variant_sku", columnList = "sku", unique = true)})
+@Table( indexes = {@Index(name = "idx_variant_sku", columnList = "sku", unique = true)})
 public class ProductVariant extends BaseModel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
@@ -20,10 +25,6 @@ public class ProductVariant extends BaseModel {
 
     @Column(nullable = false)
     private String sku; // Unique Stock Keeping Unit (e.g., TS-RED-LGE)
-
-    private String color;
-
-    private String size;
 
     @Column(nullable = false)
     private int stockQuantity;
@@ -40,4 +41,8 @@ public class ProductVariant extends BaseModel {
     private String imageUrl;
 
     private boolean isDefault= false;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String,String> specifications = new HashMap<>();
 }
