@@ -18,7 +18,7 @@ import java.util.*;
 @NoArgsConstructor
 @Table(
         indexes = {
-        @Index(name = "idx_product_slug", columnList = "seo_slug", unique = true),
+        @Index(name = "idx_product_slug", columnList = "slug", unique = true),
         @Index(name = "idx_product_condition", columnList = "item_condition")
 })
 public class Product  extends BaseModel{
@@ -66,8 +66,7 @@ public class Product  extends BaseModel{
     @JsonManagedReference
     private List<Review> reviews = new ArrayList<>();
 
-    @ManyToOne
-    @JsonManagedReference
-    private Set<Wishlist> wishlists= new HashSet<>();
+    @ManyToMany(mappedBy = "products")
+    private Set<Wishlist> wishlists = new HashSet<>();
 
 }

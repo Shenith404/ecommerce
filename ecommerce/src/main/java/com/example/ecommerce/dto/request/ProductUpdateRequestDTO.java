@@ -1,6 +1,7 @@
 package com.example.ecommerce.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +29,8 @@ public class ProductUpdateRequestDTO {
 
     private String storeId;
 
-     private String itemCondition; // New, Used, Refurbished
+    @Pattern(regexp = "New|Used|Refurbished", message = "Item condition must be one of: New, Used, Refurbished")
+    private String itemCondition; // New, Used, Refurbished
 
      private Map<String ,String> specifications; // JSON string of specifications
 

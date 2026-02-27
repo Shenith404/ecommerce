@@ -8,6 +8,7 @@ import com.example.ecommerce.dto.request.ProductUpdateRequestDTO;
 import com.example.ecommerce.service.interfaces.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,7 @@ public class ProductController {
     @PostMapping("/create")
     public ResponseEntity<ApiResponseDTO<ProductResponseDTO>> createProduct(@Valid @RequestBody ProductCreateRequestDTO productCreateRequestDTO) {
         var createdProduct = productService.create(productCreateRequestDTO);
-        return ResponseEntity.ok(
+        return ResponseEntity.status(HttpStatus.CREATED).body(
                 ApiResponseDTO.<ProductResponseDTO>builder()
                         .message("Product created successfully")
                         .success(true)
@@ -144,14 +145,15 @@ public class ProductController {
         );
     }
 
-    //get products by seller
-    @GetMapping("/seller/{sellerId}")
+    //get products by seller (public view — seller identified by id)
+    @GetMapping("/seller/{sellerId}/products")
     public ResponseEntity<ApiResponseDTO<PageResponseDTO<ProductResponseDTO>>> getProductsBySeller(
+            @PathVariable String sellerId,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt,desc") String[] sort) {
-        var products = productService.getProductsBySeller(search, page, size, sort);
+        var products = productService.getProductsBySeller(sellerId, search, page, size, sort);
         return ResponseEntity.ok(
                 ApiResponseDTO.<PageResponseDTO<ProductResponseDTO>>builder()
                         .message("Products retrieved successfully")

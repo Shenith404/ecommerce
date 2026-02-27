@@ -45,6 +45,11 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
         Product product = productService.getEntityById(dto.getProductId()).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
+        // Validate price relationship
+        if (dto.getSellingPrice().compareTo(dto.getMrpPrice()) > 0) {
+            throw new IllegalArgumentException("Selling price cannot exceed MRP");
+        }
+
         // 1. Upload Image to Cloudinary
         String imageUrl = fileUploadService.uploadImage(image);
 
@@ -80,6 +85,9 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
         if (dto.getSellingPrice().compareTo(dto.getMrpPrice()) > 0) {
             throw new IllegalArgumentException("Selling price cannot exceed MRP");
+        }
+        if(!dto.getSpecifications().isEmpty()){
+           variant.setSpecifications(dto.getSpecifications());
         }
 
         variant.setMrpPrice(dto.getMrpPrice());

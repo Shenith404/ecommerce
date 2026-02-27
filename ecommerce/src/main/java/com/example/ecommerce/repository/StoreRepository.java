@@ -15,9 +15,9 @@ public interface StoreRepository extends JpaRepository<Store, UUID> {
     boolean existsBySeoSlug(String seoSlug);
 
     @Query("SELECT s FROM Store s WHERE " +
-            "LOWER(s.name) LIKE LOWER(CONCAT('%', :searchKey, '%')) OR " +
+            "LOWER(s.storeName) LIKE LOWER(CONCAT('%', :searchKey, '%')) OR " +
             "LOWER(s.description) LIKE LOWER(CONCAT('%', :searchKey, '%'))")
-    Page<Store> findBySearchKey(String trim, Pageable pageable);
+    Page<Store> findBySearchKey(String searchKey, Pageable pageable);
 
     Optional<Store> findBySeoSlug(String seoSlug);
 }

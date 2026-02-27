@@ -2,19 +2,15 @@ package com.example.ecommerce.service.impl;
 
 import com.example.ecommerce.config.JwtProvider;
 import com.example.ecommerce.dto.reponse.PageResponseDTO;
-import com.example.ecommerce.dto.reponse.SpecificationKeyResponseDTO;
 import com.example.ecommerce.dto.reponse.StoreResponseDTO;
 import com.example.ecommerce.dto.request.StoreCreateRequestDTO;
 import com.example.ecommerce.exception.ResourceNotFoundException;
-import com.example.ecommerce.mapper.SpecificationKeyMapper;
 import com.example.ecommerce.mapper.StoreMapper;
-import com.example.ecommerce.model.SpecificationKey;
 import com.example.ecommerce.model.Store;
 import com.example.ecommerce.repository.StoreRepository;
 import com.example.ecommerce.service.interfaces.FileUploadService;
 import com.example.ecommerce.service.interfaces.SellerService;
 import com.example.ecommerce.service.interfaces.StoreService;
-import com.example.ecommerce.utils.UuidUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,9 +39,9 @@ public class StoreServiceImpl implements StoreService {
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreServiceImpl.class);
 
     private final StoreRepository storeRepository;
-    private JwtProvider jwtProvider;
-    private SellerService sellerService;
-    private FileUploadService fileUploadService;
+    private final JwtProvider jwtProvider;
+    private final SellerService sellerService;
+    private final FileUploadService fileUploadService;
 
     @Transactional
     @Override
@@ -76,10 +73,14 @@ public class StoreServiceImpl implements StoreService {
     @Transactional
     @Override
     public StoreResponseDTO updateDetails(String storeId, StoreCreateRequestDTO dto) {
-        var existingStore= storeRepository.findById(parseUUID(storeId,"Store"))
+        var existingStore = storeRepository.findById(parseUUID(storeId, "Store"))
                 .orElseThrow(
-                        ()-> new ResourceNotFoundException("Store is Not found with id: "+storeId)
+                        () -> new ResourceNotFoundException("Store is Not found with id: " + storeId)
                 );
+        String sellerEmail = jwtProvider.getEmailFromHeader();
+        if (!existingStore.getOwner().getEmail().equals(sellerEmail)) {
+            throw new AccessDeniedException("Unauthorized to update this store");
+        }
         if(dto.getStoreName() != null){
             existingStore.setStoreName(dto.getStoreName());
             String uniqueSlug = generateUniqueSlug(dto.getStoreName(), existingStore.getSeoSlug());
@@ -99,10 +100,14 @@ public class StoreServiceImpl implements StoreService {
     @Transactional
     @Override
     public StoreResponseDTO updateLogo(String storeId, MultipartFile logo) throws IOException {
-        var store = storeRepository.findById(parseUUID(storeId,"Store"))
+        var store = storeRepository.findById(parseUUID(storeId, "Store"))
                 .orElseThrow(
-                        ()-> new ResourceNotFoundException(" Store is not found on this id")
+                        () -> new ResourceNotFoundException("Store is not found with id: " + storeId)
                 );
+        String sellerEmail = jwtProvider.getEmailFromHeader();
+        if (!store.getOwner().getEmail().equals(sellerEmail)) {
+            throw new AccessDeniedException("Unauthorized to update this store");
+        }
         if (logo.isEmpty()) {
             throw new IllegalArgumentException("Logo file is empty");
         }
@@ -120,10 +125,14 @@ public class StoreServiceImpl implements StoreService {
     @Transactional
     @Override
     public StoreResponseDTO updateBanner(String storeId, MultipartFile banner) throws IOException {
-        var store = storeRepository.findById(parseUUID(storeId,"Store"))
+        var store = storeRepository.findById(parseUUID(storeId, "Store"))
                 .orElseThrow(
-                        ()-> new ResourceNotFoundException(" Store is not found on this id")
+                        () -> new ResourceNotFoundException("Store is not found with id: " + storeId)
                 );
+        String sellerEmail = jwtProvider.getEmailFromHeader();
+        if (!store.getOwner().getEmail().equals(sellerEmail)) {
+            throw new AccessDeniedException("Unauthorized to update this store");
+        }
         if (banner.isEmpty()) {
             throw new IllegalArgumentException("Banner file is empty");
         }
@@ -146,19 +155,19 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public StoreResponseDTO findBySeoSlug(String seoSlug) {
-        Store exsinstingStore = storeRepository.findBySeoSlug(seoSlug)
+        Store existingStore = storeRepository.findBySeoSlug(seoSlug)
                 .orElseThrow(
-                        ()-> new ResourceNotFoundException("Store is Not found with slug: "+seoSlug)
+                        () -> new ResourceNotFoundException("Store not found with slug: " + seoSlug)
                 );
-         return StoreMapper.toDto(exsinstingStore);
+        return StoreMapper.toDto(existingStore);
     }
 
     @Transactional(readOnly = true)
     @Override
     public StoreResponseDTO getById(String storeId) {
-        var store = storeRepository.findById(parseUUID(storeId,"Store"))
+        var store = storeRepository.findById(parseUUID(storeId, "Store"))
                 .orElseThrow(
-                        ()-> new ResourceNotFoundException(" Store is not found on this id")
+                        () -> new ResourceNotFoundException("Store not found with id: " + storeId)
                 );
         return StoreMapper.toDto(store);
     }
@@ -166,10 +175,14 @@ public class StoreServiceImpl implements StoreService {
     @Transactional
     @Override
     public void delete(String storeId) {
-        var store = storeRepository.findById(parseUUID(storeId,"Store"))
+        var store = storeRepository.findById(parseUUID(storeId, "Store"))
                 .orElseThrow(
-                        ()-> new ResourceNotFoundException(" Store is not found on this id")
+                        () -> new ResourceNotFoundException("Store is not found with id: " + storeId)
                 );
+        String sellerEmail = jwtProvider.getEmailFromHeader();
+        if (!store.getOwner().getEmail().equals(sellerEmail)) {
+            throw new AccessDeniedException("Unauthorized to delete this store");
+        }
         LOGGER.info("Store Deleted Successfully");
         storeRepository.delete(store);
     }
@@ -179,7 +192,7 @@ public class StoreServiceImpl implements StoreService {
     public PageResponseDTO<StoreResponseDTO> getAll(String search, int page, int size, String[] sort) {
         // Validate and set default sort
         if (sort == null || sort.length < 2) {
-            sort = new String[]{"name", "asc"};
+            sort = new String[]{"storeName", "asc"};
         }
 
         Sort.Direction direction = sort[1].equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -203,8 +216,6 @@ public class StoreServiceImpl implements StoreService {
 
         return new PageResponseDTO<StoreResponseDTO>(currentPageNumber, currentPage.getTotalPages(), stores);
     }
-
-
 
 
 

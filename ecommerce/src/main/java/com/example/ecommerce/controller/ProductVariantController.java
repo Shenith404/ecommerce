@@ -10,6 +10,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +46,7 @@ public class ProductVariantController {
         }
 
         var createdVariant = productVariantService.createVariant(dto, image);
-        return ResponseEntity.ok(ApiResponseDTO.<ProductVariantResponseDTO>builder()
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseDTO.<ProductVariantResponseDTO>builder()
                 .message("Product Variant Created Successfully")
                 .data(createdVariant)
                 .success(true)
@@ -54,7 +55,7 @@ public class ProductVariantController {
         );
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ApiResponseDTO<ProductVariantResponseDTO>> update(
             @PathVariable String id,
             @RequestBody @Valid ProductVariantUpdateRequestDTO dto

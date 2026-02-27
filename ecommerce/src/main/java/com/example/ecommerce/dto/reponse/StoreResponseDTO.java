@@ -1,6 +1,5 @@
 package com.example.ecommerce.dto.reponse;
 
-import jakarta.persistence.Entity;
 import lombok.*;
 
 

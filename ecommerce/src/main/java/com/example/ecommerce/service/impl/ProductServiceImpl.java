@@ -35,7 +35,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
-    private final BrandService bandService;
+    private final BrandService brandService;
     private final StoreService storeService;
     private final SellerService sellerService;
     private final JwtProvider jwtProvider;
@@ -49,32 +49,31 @@ public class ProductServiceImpl implements ProductService {
         //set category
         var category = categoryService.getCategoryEntityById(requestDTO.getCategoryId())
                 .orElseThrow(
-                        ()-> new ResourceNotFoundException("Category not found with id ")
+                        () -> new ResourceNotFoundException("Category not found with id: " + requestDTO.getCategoryId())
                 );
         product.setCategory(category);
         //set brand
-        if(requestDTO.getBrandId() != null){
-            var brand = bandService.getBrandEntityById(requestDTO.getBrandId())
+        if (requestDTO.getBrandId() != null) {
+            var brand = brandService.getBrandEntityById(requestDTO.getBrandId())
                     .orElseThrow(
-                            ()-> new ResourceNotFoundException("Brand not found with id ")
+                            () -> new ResourceNotFoundException("Brand not found with id: " + requestDTO.getBrandId())
                     );
             product.setBrand(brand);
         }
         //set store
-        if(requestDTO.getStoreId() != null){
+        if (requestDTO.getStoreId() != null) {
             var store = storeService.getStoreEntityById(requestDTO.getStoreId())
                     .orElseThrow(
-                            ()-> new ResourceNotFoundException("Store not found with id ")
+                            () -> new ResourceNotFoundException("Store not found with id: " + requestDTO.getStoreId())
                     );
             product.setStore(store);
         }
 
-        //set seller
-        //get email from token
+        //set seller — get email from token
         String sellerEmail = jwtProvider.getEmailFromHeader();
         var seller = sellerService.getSellerEntityByEmail(sellerEmail)
                 .orElseThrow(
-                        ()-> new ResourceNotFoundException("Seller not found with Email ")
+                        () -> new ResourceNotFoundException("Seller not found with email: " + sellerEmail)
                 );
         product.setSeller(seller);
         //set slug
@@ -88,7 +87,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDTO update(ProductUpdateRequestDTO requestDTO) {
         Product product = productRepository.findById(UUID.fromString(requestDTO.getId()))
                 .orElseThrow(
-                        ()-> new ResourceNotFoundException("Product not found with id ")
+                        () -> new ResourceNotFoundException("Product not found with id: " + requestDTO.getId())
                 );
         // check owner of the product
         String sellerEmail = jwtProvider.getEmailFromHeader();
@@ -109,24 +108,24 @@ public class ProductServiceImpl implements ProductService {
             product.setSpecifications(requestDTO.getSpecifications());
         }
 
-        if(requestDTO.getCategoryId() != null){
+        if (requestDTO.getCategoryId() != null) {
             var category = categoryService.getCategoryEntityById(requestDTO.getCategoryId())
                     .orElseThrow(
-                            ()-> new ResourceNotFoundException("Category not found with id ")
+                            () -> new ResourceNotFoundException("Category not found with id: " + requestDTO.getCategoryId())
                     );
             product.setCategory(category);
         }
-        if(requestDTO.getBrandId() != null){
-            var brand = bandService.getBrandEntityById(requestDTO.getBrandId())
+        if (requestDTO.getBrandId() != null) {
+            var brand = brandService.getBrandEntityById(requestDTO.getBrandId())
                     .orElseThrow(
-                            ()-> new ResourceNotFoundException("Brand not found with id ")
+                            () -> new ResourceNotFoundException("Brand not found with id: " + requestDTO.getBrandId())
                     );
             product.setBrand(brand);
         }
-        if(requestDTO.getStoreId() != null){
+        if (requestDTO.getStoreId() != null) {
             var store = storeService.getStoreEntityById(requestDTO.getStoreId())
                     .orElseThrow(
-                            ()-> new ResourceNotFoundException("Store not found with id ")
+                            () -> new ResourceNotFoundException("Store not found with id: " + requestDTO.getStoreId())
                     );
             product.setStore(store);
         }
@@ -140,7 +139,7 @@ public class ProductServiceImpl implements ProductService {
     public void delete(String id) {
         Product product = productRepository.findById(UUID.fromString(id))
                 .orElseThrow(
-                        ()-> new ResourceNotFoundException("Product not found with id ")
+                        () -> new ResourceNotFoundException("Product not found with id: " + id)
                 );
         // check owner of the product
         String sellerEmail = jwtProvider.getEmailFromHeader();
@@ -155,7 +154,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDTO getById(String id) {
         Product product = productRepository.findById(UUID.fromString(id))
                 .orElseThrow(
-                        ()-> new ResourceNotFoundException("Product not found with id ")
+                        () -> new ResourceNotFoundException("Product not found with id: " + id)
                 );
         return ProductMapper.toDto(product);
     }
@@ -177,6 +176,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PageResponseDTO<ProductResponseDTO> getAll(String search, int page, int size, String[] sort) {
 
         // Validate sort array
@@ -230,10 +230,10 @@ public class ProductServiceImpl implements ProductService {
         return new PageResponseDTO<>(currentPageNumber, currentPage.getTotalPages(), products);
     }
 
-    // get products by seller
+    // get products by seller (public view)
     @Override
     @Transactional(readOnly = true)
-    public PageResponseDTO<ProductResponseDTO> getProductsBySeller( String search, int page, int size, String[] sort) {
+    public PageResponseDTO<ProductResponseDTO> getProductsBySeller(String sellerId, String search, int page, int size, String[] sort) {
         // Validate sort array
         if (sort == null || sort.length < 2) {
             sort = new String[]{"createdAt", "desc"};
@@ -242,21 +242,20 @@ public class ProductServiceImpl implements ProductService {
         Sort.Direction direction = sort[1].equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
 
-        String sellerEmail = jwtProvider.getEmailFromHeader();
+        UUID sellerUUID = UUID.fromString(sellerId);
 
         Page<Product> currentPage;
-        int currentPageNumber = pageable.getPageNumber();
         List<ProductResponseDTO> products;
         if (search != null && !search.isBlank()) {
-            currentPage = productRepository.findSellerProductsBySearchKey(search, sellerEmail, pageable);
+            currentPage = productRepository.findProductsBySellerIdAndSearchKey(sellerUUID, search, pageable);
         } else {
-            currentPage = productRepository.findAllSellerProducts(sellerEmail, pageable);
+            currentPage = productRepository.findAllProductsBySellerId(sellerUUID, pageable);
         }
-        products = (currentPage.getContent()).stream().map(ProductMapper::toDto).toList();
+        products = currentPage.getContent().stream().map(ProductMapper::toDto).toList();
 
-        LOGGER.info("Retrieved {} products", products.size());
+        LOGGER.info("Retrieved {} products for seller {}", products.size(), sellerId);
 
-        return new PageResponseDTO<>(currentPageNumber, currentPage.getTotalPages(), products);
+        return new PageResponseDTO<>(pageable.getPageNumber(), currentPage.getTotalPages(), products);
     }
 
     // get all products (public view)
