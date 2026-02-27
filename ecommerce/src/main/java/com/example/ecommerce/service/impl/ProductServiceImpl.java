@@ -299,6 +299,9 @@ public class ProductServiceImpl implements ProductService {
         while (productRepository.existsBySlug(candidate)
                 && !candidate.equals(currentSlug)) {
             candidate = baseSlug + "-" + counter++;
+            if(counter > 100) { // safety check to prevent infinite loop
+                throw new IllegalArgumentException("Unable to generate unique slug for product title: " + title);
+            }
         }
         return candidate;
     }

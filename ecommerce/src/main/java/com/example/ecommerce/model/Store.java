@@ -21,14 +21,14 @@ public class Store extends BaseModel {
     @Column(nullable = false, unique = true)
     private String seoSlug;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT" ,length = 1000)
     private String description;
 
     private String logoUrl;
 
     private String bannerUrl;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", length = 2000)
     private String returnPolicy;
 
     private double averageRating = 0.0;

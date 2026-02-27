@@ -1,0 +1,28 @@
+package com.example.ecommerce.mapper;
+
+import com.example.ecommerce.dto.reponse.StoreResponseDTO;
+import com.example.ecommerce.dto.request.StoreCreateRequestDTO;
+import com.example.ecommerce.model.Store;
+
+public class StoreMapper {
+    public static StoreResponseDTO toDto(Store store) {
+        return StoreResponseDTO.builder()
+                .id(store.getId().toString())
+                .storeName(store.getStoreName())
+                .seoSlug(store.getSeoSlug())
+                .description(store.getDescription())
+                .logoUrl(store.getLogoUrl())
+                .bannerUrl(store.getBannerUrl())
+                .returnPolicy(store.getReturnPolicy())
+                .averageRating(store.getAverageRating())
+                .build();
+    }
+
+    public static  Store toEntity(StoreCreateRequestDTO dto) {
+        return Store.builder()
+                .storeName(dto.getStoreName())
+                .description(dto.getDescription())
+                .returnPolicy(dto.getReturnPolicy())
+                .build();
+    }
+}

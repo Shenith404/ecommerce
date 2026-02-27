@@ -31,6 +31,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.example.ecommerce.utils.UuidUtil.parseUUID;
+
 @Service
 @RequiredArgsConstructor
 public class SpecificationKeyServiceImpl implements SpecificationKeyService {
@@ -38,16 +40,8 @@ public class SpecificationKeyServiceImpl implements SpecificationKeyService {
 
     private final SpecificationKeyRepository specificationKeyRepository;
 
-    /**
-     * Safely parse UUID string with proper error handling
-     */
-    private UUID parseUUID(String id, String entityName) {
-        try {
-            return UUID.fromString(id);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid " + entityName + " ID format: " + id);
-        }
-    }
+
+
 
     @Transactional
     @Override
