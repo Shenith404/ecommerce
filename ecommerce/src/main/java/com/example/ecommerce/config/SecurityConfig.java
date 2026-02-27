@@ -27,9 +27,12 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**",
-                                "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/swagger-ui/*","/products/*/reviews","/sellers/signup/**","/sellers/signIn/**"
-                        ,"/products/all","/products/{productId}","/products/category/{categoryId}","/categories/all")
-                        .permitAll()
+                                "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/swagger-ui/*",
+                                "/products/*/reviews", "/sellers/signup/**", "/sellers/signIn/**",
+                                "/products/all", "/products/{productId}", "/products/category/{categorySlug}",
+                                "/products/slug/**", "/products/filter",
+                                "/categories/all"
+                        ).permitAll()
                         .anyRequest()
                         .authenticated()
                 )

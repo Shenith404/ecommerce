@@ -17,7 +17,12 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table( indexes = {@Index(name = "idx_variant_sku", columnList = "sku", unique = true)})
+@Table(indexes = {
+        @Index(name = "idx_variant_sku", columnList = "sku", unique = true),
+        @Index(name = "idx_variant_selling_price", columnList = "selling_price"),
+        @Index(name = "idx_variant_stock", columnList = "stock_quantity"),
+        @Index(name = "idx_variant_product_id", columnList = "product_id")
+})
 public class ProductVariant extends BaseModel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")

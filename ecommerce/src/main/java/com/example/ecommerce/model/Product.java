@@ -19,7 +19,12 @@ import java.util.*;
 @Table(
         indexes = {
         @Index(name = "idx_product_slug", columnList = "slug", unique = true),
-        @Index(name = "idx_product_condition", columnList = "item_condition")
+        @Index(name = "idx_product_condition", columnList = "item_condition"),
+        @Index(name = "idx_product_category", columnList = "category_id"),
+        @Index(name = "idx_product_brand", columnList = "brand_id"),
+        @Index(name = "idx_product_seller", columnList = "seller_id"),
+        @Index(name = "idx_product_rating", columnList = "average_rating"),
+        @Index(name = "idx_product_category_condition", columnList = "category_id, item_condition")
 })
 public class Product  extends BaseModel{
 
