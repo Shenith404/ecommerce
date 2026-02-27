@@ -44,10 +44,11 @@ public class SpecificationKeyController {
     }
 
     // Update specification key
-    @PatchMapping("/update")
+    @PatchMapping("{specKeyId}/update")
     public ResponseEntity<ApiResponseDTO<SpecificationKeyResponseDTO>> updateSpecificationKey(
+            @PathVariable String specKeyId,
             @Valid @RequestBody SpecificationKeyUpdateRequestDTO dto) {
-        var updated = specificationKeyService.updateSpecificationKey(dto);
+        var updated = specificationKeyService.updateSpecificationKey(specKeyId ,dto);
         return ResponseEntity.ok(
                 ApiResponseDTO.<SpecificationKeyResponseDTO>builder()
                         .message("Specification key updated successfully")

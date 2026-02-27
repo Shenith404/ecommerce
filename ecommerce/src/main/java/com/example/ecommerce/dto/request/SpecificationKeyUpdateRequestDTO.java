@@ -5,8 +5,6 @@ import lombok.Data;
 
 @Data
 public class SpecificationKeyUpdateRequestDTO {
-    @NotBlank(message = "Specification key id is required")
-    private String id;
     
     @NotBlank(message = "Specification key name is required")
     private String name;

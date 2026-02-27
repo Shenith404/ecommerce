@@ -16,7 +16,7 @@ public interface SpecificationKeyService {
     
     SpecificationKeyResponseDTO createSpecificationKey(SpecificationKeyCreateRequestDTO dto);
     
-    SpecificationKeyResponseDTO updateSpecificationKey(SpecificationKeyUpdateRequestDTO dto);
+    SpecificationKeyResponseDTO updateSpecificationKey(String id,SpecificationKeyUpdateRequestDTO dto);
     
     void deleteSpecificationKey(String specKeyId);
     

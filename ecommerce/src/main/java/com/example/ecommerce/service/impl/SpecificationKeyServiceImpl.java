@@ -71,10 +71,10 @@ public class SpecificationKeyServiceImpl implements SpecificationKeyService {
 
     @Transactional
     @Override
-    public SpecificationKeyResponseDTO updateSpecificationKey(SpecificationKeyUpdateRequestDTO dto) {
-        UUID specKeyId = parseUUID(dto.getId(), "Specification Key");
+    public SpecificationKeyResponseDTO updateSpecificationKey( String id,SpecificationKeyUpdateRequestDTO dto) {
+        UUID specKeyId = parseUUID(id, "Specification Key");
         SpecificationKey existingSpecKey = specificationKeyRepository.findById(specKeyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Specification key not found with id: " + dto.getId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Specification key not found with id: " + id));
 
         String trimmedName = dto.getName().trim();
         
